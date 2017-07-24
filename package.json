@@ -1,0 +1,35 @@
+{
+  "name": "dc3-skew",
+  "version": "0.0.1",
+  "description": "Suffix array implementation using the linear-time DC3/Skew algorithm.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "suffix",
+    "array",
+    "suffix",
+    "tree",
+    "longest",
+    "common",
+    "subsequence",
+    "longest",
+    "common",
+    "subtree",
+    "longest",
+    "common",
+    "palindrome",
+    "lcs",
+    "lcp",
+    "burrows-wheeler",
+    "transform",
+    "bwt",
+    "linear",
+    "time",
+    "o(n)",
+    "algorithm"
+  ],
+  "author": "Kim Burgaard <kim@burgaard.com> (www.burgaard.com)",
+  "license": "MIT"
+}
