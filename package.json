@@ -1,11 +1,9 @@
 {
-  "name": "dc3-skew",
+  "name": "multiple-longest-common-substring",
   "version": "0.0.1",
-  "description": "Suffix array implementation using the linear-time DC3/Skew algorithm.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "description": "Linear-time Multiple Longest Common Substring (MLCS).",
+  "author": "Kim Burgaard <kim@burgaard.us> (http://www.burgaard.us)",
+  "license": "MIT",
   "keywords": [
     "suffix",
     "array",
@@ -30,6 +28,16 @@
     "o(n)",
     "algorithm"
   ],
-  "author": "Kim Burgaard <kim@burgaard.com> (www.burgaard.com)",
-  "license": "MIT"
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "20.0.4"
+  },
+  "dependencies": {
+    "babel": "6.23.0",
+    "babel-jest": "20.0.3",
+    "babel-preset-es2015": "^6.24.1"
+  }
 }
