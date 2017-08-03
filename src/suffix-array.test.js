@@ -39,7 +39,15 @@ describe('suffix-array', () => {
 
             const result = getSuffixArray(s, '$');
 
-            expect(result).toEqual([ 1, 7, 3, 4, 8, 6, 3, 1, 4, 0, 2, 5, 2, 9, 0 ]);
+            expect(result).toEqual([ 14, 9, 0, 12, 6, 7, 10, 2, 8, 11, 5, 1, 4, 13, 3 ]);
+        });
+
+        test('handles long strings', () => {
+            const s = ' 1 2 apple 3 4~4 5 apple 6 7!8 9 apple 1 2@apple 3 4#5 6 apple$apple%';
+
+            const result = getSuffixArray(s, '^');
+
+            expect(result).toEqual([ 0, 38, 2, 40, 48, 10, 50, 12, 16, 24, 54, 26, 30, 18, 4, 32, 56, 28, 52, 62, 68, 1, 39, 3, 41, 49, 11, 15, 51, 13, 53, 17, 25, 55, 27, 29, 31, 42, 69, 33, 57, 63, 9, 67, 19, 43, 5, 37, 47, 23, 61, 66, 36, 22, 46, 8, 60, 21, 45, 7, 35, 59, 65, 6 ]);
         });
     });
 
@@ -359,31 +367,43 @@ describe('suffix-array', () => {
             const result = createNonSampledPairs(sequence, suffixes);
 
             expect(result).toEqual([
-                [ 1, 7 ],
-                [ 4, 8 ],
-                [ 3, 1 ],
-                [ 1, 2 ],
-                [ 1, 9 ]
+                [ 0, 1, 7 ],
+                [ 3, 4, 8 ],
+                [ 6, 3, 1 ],
+                [ 9, 1, 2 ],
+                [ 12, 1, 9 ]
             ]);
-        });
-
-        test('throws an error if sequence and suffixes are not the same length', () => {
-            //                 m  o  n  s  o  o  n  n  o  m  n  o  m  s  $
-            const sequence = [ 1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 4, 5 ];
-
-            const suffixes = [  , 7, 3,  , 8, 6,  , 1, 4,  , 2, 5,  , 9 ];
-
-            expect(() => createNonSampledPairs(sequence, suffixes)).toThrow();
         });
     });
 
     describe('merge', () => {
-        const sequence = [ 1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 4, 5 ];
+        const sequence = [ 109, 111, 110, 115, 111, 111, 110, 110, 111, 109, 110, 111, 109, 115, 36 ];
 
-        const suffixes = [  , 7, 3,  , 8, 6,  , 1, 4,  , 2, 5,  , 9, 0 ];
+        const sortedNonSampledPairs = [
+            [ 9, 109, 2 ],
+            [ 0, 109, 7 ],
+            [ 12, 109, 9 ],
+            [ 6, 110, 1 ],
+            [ 3, 115, 8 ]
+        ];
 
-        const result = merge(sequence, suffixes);
+        const sortedSamples = [
+            [ 14, 36, 36, 36 ],
+            [ 7, 110, 111, 109 ],
+            [ 10, 110, 111, 109 ],
+            [ 2, 110, 115, 111 ],
+            [ 8, 111, 109, 110 ],
+            [ 11, 111, 109, 115 ],
+            [ 5, 111, 110, 110 ],
+            [ 1, 111, 110, 115 ],
+            [ 4, 111, 111, 110 ],
+            [ 13, 115, 36, 36 ]
+        ];
 
-        expect(result).toEqual([ 1, 7, 3, 4, 8, 6, 3, 1, 4, 0, 2, 5, 2, 9, 0 ]);
+        const suffixes = [ 1, 7, 3, 4, 8, 6, 3, 1, 4, 0, 2, 5, 2, 9, 0 ];
+
+        const result = merge(sequence, sortedNonSampledPairs, sortedSamples, suffixes);
+
+        expect(result).toEqual([ 14, 9, 0, 12, 6, 7, 10, 2, 8, 11, 5, 1, 4, 13, 3 ]);
     });
 });

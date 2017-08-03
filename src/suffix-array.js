@@ -39,7 +39,7 @@ function getSuffixArray(s, terminator) {
     const sequence = stringToSequence(s);
     const result = suffixArray(sequence, terminator.charCodeAt(0));
 
-    console.log(result.map(suffix => s.slice(suffix)));
+    // console.log(result.map(suffix => s.slice(suffix)));
 
     return result;
 }
@@ -74,17 +74,15 @@ function suffixArray(sequence, terminator) {
     }
 
     const s = sequence.map(c => String.fromCharCode(c));
-    console.log('sortedSamples', sortedSamples.map(sample => s.slice(sample[0]).join('')));
 
     const suffixes = sortedSamplesToSuffixes(sortedSamples);
 
     const sortedNonSampledPairs = radixSort(createNonSampledPairs(sequence, suffixes), entry => entry.slice(1));
-    console.log('sortedNonSampledPairs', sortedNonSampledPairs.map(nonSample => s.slice(sample[0]).join('')));
 
     let rank = 0;
     sortedNonSampledPairs.forEach(nonSample => suffixes[nonSample[0]] = rank++);
 
-    return merge(sequence, suffixes);
+    return merge(sequence, sortedNonSampledPairs, sortedSamples, suffixes);
 }
 
 function sample(sequence, terminator) {
@@ -240,9 +238,6 @@ function sortedSamplesToSuffixes(sortedSamples) {
 
 function createNonSampledPairs(sequence, suffixes) {
     const n = sequence.length;
-    if (suffixes.length != n) {
-        throw new Error(`The suffix array is not the expected length: ${ suffixes.length } != ${ n }`);
-    }
 
     const nonSampledPairs = [];
 
@@ -260,64 +255,51 @@ function sortedNonSampledPairsToSuffixes(suffixes, sortedNonSampledPairs) {
     sortedNonSampledPairs.forEach(nonSample => suffixes[nonSample[0]] = rank++);
 }
 
-function merge(sequence, suffixes) {
+function merge(sequence, sortedNonSampledPairs, sortedSamples, suffixes) {
     const result = [];
-    console.log(`n = ${sequence.length}`, sequence);
 
-    let i = 0;
-    let j = 0;
-    while (j < sequence.length) { // j always 0 (mod 3)
-        nextNonSampled: while (j < sequence.length && i < sequence.length) {
-            console.log(`j = ${j}, i = ${i}`);
-            switch (i % 3) {
-                case 0:
-                    // skip
-                    console.log(`skipping i`);
-                    i++;
-                    break;
+    let a = 0;
+    let b = 0;
+    while (a < sortedNonSampledPairs.length) {
+        const j = sortedNonSampledPairs[a][0];
+        if (j % 3 != 0) {
+            throw new Error('Sorted non-samples should only contain offset 0 (mod 3) entries');
+        }
+
+        nextNonSampled: while(b < sortedSamples.length) {
+            const i = sortedSamples[b][0];
+            switch(i % 3) {
                 case 1:
-                    if ((sequence[i] < sequence[j]) || ((sequence[i] === sequence[j]) && (suffixes[i + 1] < suffixes[j + 1]))) {
-                        console.log(`picking i (a) sequence[${i}] = ${ sequence[i] }, sequence[${j}] = ${ sequence[j] }, suffixes[${i+1}] = ${suffixes[i+1]}, suffixes[${j+1}] = ${suffixes[j+1]}`);
-                        result.push(i++);
+                    if ((sequence[i] < sequence[j])
+                        || ((sequence[i] === sequence[j]) && (suffixes[i+1] < suffixes[j+1])) ) {
+                        result.push(sortedSamples[b++][0]);
                     } else {
-                        console.log(`picking j (b) sequence[${i}] = ${ sequence[i] }, sequence[${j}] = ${ sequence[j] }, suffixes[${i+1}] = ${suffixes[i+1]}, suffixes[${j+1}] = ${suffixes[j+1]}`);
-                        result.push(j);
-                        j += 3;
+                        result.push(sortedNonSampledPairs[a++][0]);
                         break nextNonSampled;
                     }
                     break;
                 case 2:
-                    if ((sequence[i] < sequence[j]) || ((sequence[i] === sequence[j]) && (sequence[i + 1] < sequence[j + 1])) || ((sequence[i] === sequence[j]) && (sequence[i + 1] === sequence[j + 1]) (suffixes[i + 1] < suffixes[j + 1]))) {
-                        console.log(`picking i (c) sequence[${i}] = ${ sequence[i] }, sequence[${j}] = ${ sequence[j] }, suffixes[${i+1}] = ${suffixes[i+1]}, suffixes[${j+1}] = ${suffixes[j+1]}, suffixes[${i+2}] = ${suffixes[i+2]}, suffixes[${j+2}] = ${suffixes[j+2]}`);
-                        result.push(i++);
+                    if ( (sequence[i] < sequence[j])
+                        || ( (sequence[i] === sequence[j]) && (sequence[i+1] < sequence[j+1]) )
+                        || ( (sequence[i] === sequence[j]) && (sequence[i+1] === sequence[j+1]) && (suffixes[i+2] < suffixes[j+2]) ) ) {
+                        result.push(sortedSamples[b++][0]);
                     } else {
-                        console.log('picking j (d)');
-                        result.push(j);
-                        j += 3;
+                        result.push(sortedNonSampledPairs[a++][0]);
                         break nextNonSampled;
                     }
                     break;
+                default:
+                    throw new Error('Sorted samples should only contain offset != 0 (mod 3) entries');
             }
         }
 
-        if (i >= sequence.length) {
-            console.log(`j = ${j}, i = ${i}`);
-
-            result.push(j);
-            j += 3;
-            console.log('picking j (e)');
+        if (b === sortedSamples.length) {
+            result.push(sortedNonSampledPairs[a++][0]);
         }
     }
 
-    while (i < sequence.length) {
-        console.log(`j = ${j}, i = ${i}`);
-
-        if (i % 3 != 0) {
-            result.push(i);
-            console.log('picking i (f)');
-        }
-
-        i++;
+    while (b < sortedSamples.lenth) {
+        result.push(sortedSamples[b++][0]);
     }
 
     return result;
