@@ -39,8 +39,6 @@ function getSuffixArray(s, terminator) {
     const sequence = stringToSequence(s);
     const result = suffixArray(sequence, terminator.charCodeAt(0));
 
-    // console.log(result.map(suffix => s.slice(suffix)));
-
     return result;
 }
 

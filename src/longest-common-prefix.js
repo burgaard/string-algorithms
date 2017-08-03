@@ -28,12 +28,17 @@
 /**
  * Calculates the longest common prefix from a suffix array in linear time.
  *
- * @param {number[]} a suffix array.
+ * @param {string[]} a sequence of character codes
+ * @param {number[]} the corresponding suffix array.
  * @return number[] a longet common prefix array.
  */
-function getLongestCommonPrefix(suffixArray) {
-    const n = suffixArray.length;
-    const rank = new Array[];
+function getLongestCommonPrefix(sequence, suffixArray) {
+    const n = sequence.length;
+    if (n != suffixArray.length) {
+        throw new Error(`The sequence and suffix array lengths don't match: ${ n } != ${ suffixArray.length }`);
+    }
+
+    const rank = new Array();
     const lcp = [];
 
     for (let i = 0; i < n; i++) {
@@ -43,18 +48,15 @@ function getLongestCommonPrefix(suffixArray) {
     let h = 0;
 
     for (let i = 0; i < n; i++) {
-        let k = rank[ i ];
-        if (k == 0) {
-            lcp[ k ] = -1;
-        } else {
-            let j = suffixArray[ k - 1 ];
-            while(i + h < n && j + h < n && t[ i + h ] == t[ j + h ]) {
+        if (rank[ i ] > 0) {
+            const j = suffixArray[ rank[ i ] - 1 ];
+            while(sequence[ i + h ] == sequence[ j + h ]) {
                 h++;
             }
-            lcp[ k ] = h;
-        }
-        if (h > 0) {
-            h--;
+            lcp[ rank[ i ] ] = h;
+            if (h > 0) {
+                h--;
+            }
         }
     }
 
