@@ -26,8 +26,138 @@
  * SOFTWARE.
  */
 
-import getSuffixArray from './suffix-array.js';
-import getLongestCommonPrefix from './longest-common-prefix.js';
+import getSuffixArray from './suffix-array';
+import getLongestCommonPrefix from './longest-common-prefix';
+
+/**
+ * Node instances have a value, which is the node's LCP rank and at least two
+ * children which may either be other nodes or leafs that represent the start
+ * index of a suffix string.
+ */
+export function Node(value) {
+  this.value = value;
+
+  this.parent = undefined;
+  this.left = undefined;
+  this.right = undefined;
+}
+
+export function prune(node) {
+  if (node.left != null) {
+    if (node.value === node.left.value) {
+      node.left = node.left.left;
+
+      if (node.right != null) {
+        if (node.left.right != null) {
+          throw new Error('Can\'t fuse left node when both right nodes are defined');
+        }
+      } else {
+        node.right = node.left.right;
+      }
+    }
+
+    prune(node.left);
+  }
+
+  if (node.right != null) {
+    if (node.value === node.right.value) {
+      node.right = node.right.right;
+
+      if (node.left != null) {
+        if (node.right.left != null) {
+          throw new Error('Can\'t fuse right node when both left nodes are defined');
+        }
+      } else {
+        node.left = node.right.left;
+      }
+    }
+
+    prune(node.right);
+  }
+
+  delete node.parent;
+
+  return node;
+}
+
+// O(n) DFS pass to add suffix nodes to the cartesian LCP tree.
+export function addSuffixes(node, suffixArray) {
+  if (node.left != null) {
+    addSuffixes(node.left, suffixArray);
+  } else {
+    if (suffixArray.length === 0) {
+      throw new Error(`The suffix array is empty at index ${node.value}`);
+    }
+
+    node.left = suffixArray.shift();
+  }
+
+  if (node.right != null) {
+    addSuffixes(node.right, suffixArray);
+  } else {
+    if (suffixArray.length === 0) {
+      throw new Error(`The suffix array is empty at index ${node.value}`);
+    }
+
+    node.right = suffixArray.shift();
+  }
+}
+
+// O(n) cartesian tree construction
+export function createCartesianTree(sequence) {
+  const n = sequence.length;
+
+  let root = new Node(sequence[0]);
+
+  let last = root;
+  for (let i = 1; i < n; i++) {
+    const node = new Node(sequence[i]);
+
+    while (last.value > sequence[i] && last !== root) {
+      last = last.parent;
+    }
+
+    if (last.value > sequence[i]) {
+      root.parent = node;
+      node.left = root;
+      root = node;
+    } else if (last.right == null) {
+      last.right = node;
+      node.parent = last;
+    } else {
+      last.right.parent = node;
+      node.left = last.right;
+      last.right = node;
+      node.parent = last;
+    }
+  }
+
+  return prune(root);
+}
+
+export function print(s, node) {
+  switch (typeof node.left) {
+    case 'number':
+      console.log(s.slice(node.left));
+      break;
+    case 'object':
+      print(s, node.left);
+      break;
+    default:
+      throw new Error(typeof node.left);
+  }
+
+  switch (typeof node.right) {
+    case 'number':
+      console.log(s.slice(node.right));
+      break;
+    case 'object':
+      print(s, node.right);
+      break;
+    default:
+      throw new Error(typeof node.right);
+  }
+}
 
 /**
  * Calculates the suffix tree for the given string.
@@ -37,175 +167,37 @@ import getLongestCommonPrefix from './longest-common-prefix.js';
  *    be present in s. If none are specified, then a character in the Unicode
  *    private use area will be used.
  */
-function suffixTree(s, terminator) {
-    if (terminator != null) {
-        if (terminator.length != 1) {
-            throw 'The terminator argument must be exactly one character';
-        }
-
-        // O(n)
-        if (s.indexOf(terminator) != -1) {
-            throw 'The terminator argument must not be a member of s';
-        }
-    } else {
-        throw new Error('TODO');
+export default function suffixTree(s, terminator) {
+  if (terminator != null) {
+    if (terminator.length !== 1) {
+      throw new Error('The terminator argument must be exactly one character');
     }
 
     // O(n)
-    const sa = getSuffixArray(s, terminator);
-
-    // O(n)
-    const lcp = getLongestCommonPrefix(s + terminator, sa);
-
-    // O(n)
-    const tree = createCartesianTree(lcp);
-
-    // O(n)
-    addSuffixes(tree, sa);
-
-    if (sa.length != 0) {
-        throw new Error('Left-over suffix array entries');
+    if (s.indexOf(terminator) !== -1) {
+      throw new Error('The terminator argument must not be a member of s');
     }
+  } else {
+    throw new Error('TODO');
+  }
 
-    print(s, tree);
+  // O(n)
+  const sa = getSuffixArray(s, terminator);
 
-    return tree;
+  // O(n)
+  const lcp = getLongestCommonPrefix(s + terminator, sa);
+
+  // O(n)
+  const tree = createCartesianTree(lcp);
+
+  // O(n)
+  addSuffixes(tree, sa);
+
+  if (sa.length !== 0) {
+    throw new Error('Left-over suffix array entries');
+  }
+
+  print(s, tree);
+
+  return tree;
 }
-
-// O(n) DFS pass to add suffix nodes to the cartesian LCP tree.
-function addSuffixes(node, suffixArray) {
-    if (node.left != null) {
-        addSuffixes(node.left, suffixArray);
-    } else {
-        if (suffixArray.length == 0) {
-            throw new Error(`The suffix array is empty at index ${ node.value }`);
-        }
-
-        node.left = suffixArray.shift();
-    }
-
-    if (node.right != null) {
-        addSuffixes(node.right, suffixArray);
-    } else {
-        if (suffixArray.length == 0) {
-            throw new Error(`The suffix array is empty at index ${ node.value }`);
-        }
-
-        node.right = suffixArray.shift();
-    }
-}
-
-// O(n) cartesian tree construction
-function createCartesianTree(sequence) {
-    const n = sequence.length;
-
-    let root = new Node(sequence[0]);
-
-    let last = root;
-    for (let i = 1; i < n; i++) {
-        const node = new Node(sequence[i]);
-
-        while (last.value > sequence[i] && last != root) {
-            last = last.parent;
-        }
-
-        if (last.value > sequence[i]) {
-            root.parent = node;
-            node.left = root;
-            root = node;
-        } else if (last.right == null) {
-            last.right = node;
-            node.parent = last;
-        } else {
-            last.right.parent = node;
-            node.left = last.right;
-            last.right = node;
-            node.parent = last;
-        }
-    }
-
-    return prune(root);
-}
-
-function prune(node) {
-    if (node.left != null) {
-        if (node.value == node.left.value) {
-            node.left = node.left.left;
-
-            if (node.right != null) {
-                if (node.left.right != null) {
-                    throw new Error('Can\'t fuse left node when both right nodes are defined');
-                }
-            } else {
-                node.right = node.left.right;
-            }
-        }
-
-        prune(node.left);
-    }
-
-    if (node.right != null) {
-        if (node.value == node.right.value) {
-            node.right = node.right.right;
-
-            if (node.left != null) {
-                if (node.right.left != null) {
-                    throw new Error('Can\'t fuse right node when both left nodes are defined');
-                }
-            } else {
-                node.left = node.right.left;
-            }
-        }
-
-        prune(node.right);
-    }
-
-    delete node.parent;
-
-    return node;
-}
-
-function print(s, node) {
-    switch(typeof node.left) {
-        case 'number':
-            console.log(s.slice(node.left));
-            break;
-        case 'object':
-            print(s, node.left);
-            break;
-        default:
-            throw new Error(typeof node.left);
-    }
-
-    switch(typeof node.right) {
-        case 'number':
-            console.log(s.slice(node.right));
-            break;
-        case 'object':
-            print(s, node.right);
-            break;
-        default:
-            throw new Error(typeof node.right);
-    }
-}
-
-/**
- * Node instances have a value, which is the node's LCP rank and at least two
- * children which may either be other nodes or leafs that represent the start
- * index of a suffix string.
- */
-function Node(value) {
-    this.value = value;
-
-    this.parent = undefined;
-    this.left = undefined;
-    this.right = undefined;
-}
-
-export default suffixTree;
-
-export {
-    addSuffixes,
-    createCartesianTree,
-    prune
-};

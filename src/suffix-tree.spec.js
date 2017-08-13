@@ -21,14 +21,14 @@
  */
 
 import suffixTree, {
-    addSuffixes,
-    getCartesianTree
-} from './suffix-tree.js';
+  addSuffixes,
+  getCartesianTree
+} from './suffix-tree';
 
 describe('suffix-tree', () => {
-    test('...', () => {
-        const result = suffixTree('aabaaabbabaaaba', '$');
+  test('...', () => {
+    const result = suffixTree('aabaaabbabaaaba', '$');
 
-        expect(result).toEqual([]);
-    });
+    expect(result).toEqual([]);
+  });
 });

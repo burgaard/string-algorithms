@@ -20,390 +20,384 @@
  * SOFTWARE.
  */
 
-import getSuffixArray, {
-    suffixArray,
-    stringToSequence,
-    sample,
-    radixSort,
-    samplesToSequence,
-    sampleToString,
-    sortedSamplesToSuffixes,
-    createNonSampledPairs,
-    merge
-} from './suffix-array.js';
+import suffixArray, {
+  createSuffixArray,
+  stringToSequence,
+  sampleSequence,
+  radixSort,
+  samplesToSequence,
+  sampleToString,
+  sortedSamplesToSuffixes,
+  createNonSampledPairs,
+  merge,
+} from './suffix-array';
 
 describe('suffix-array', () => {
-    describe('getSuffixArray', () => {
-        test('returns the suffix array corresponding to the given string', () => {
-            const s = 'monsoonnomnoms';
+  describe('suffixArray', () => {
+    test('returns the suffix array corresponding to the given string', () => {
+      const s = 'monsoonnomnoms';
 
-            const result = getSuffixArray(s, '$');
+      const result = suffixArray(s, '$');
 
-            expect(result).toEqual([ 14, 9, 0, 12, 6, 7, 10, 2, 8, 11, 5, 1, 4, 13, 3 ]);
-        });
-
-        test('handles long strings', () => {
-            const s = ' 1 2 apple 3 4~4 5 apple 6 7!8 9 apple 1 2@apple 3 4#5 6 apple$apple%';
-
-            const result = getSuffixArray(s, '^');
-
-            expect(result).toEqual([ 0, 38, 2, 40, 48, 10, 50, 12, 16, 24, 54, 26, 30, 18, 4, 32, 56, 28, 52, 62, 68, 1, 39, 3, 41, 49, 11, 15, 51, 13, 53, 17, 25, 55, 27, 29, 31, 42, 69, 33, 57, 63, 9, 67, 19, 43, 5, 37, 47, 23, 61, 66, 36, 22, 46, 8, 60, 21, 45, 7, 35, 59, 65, 6 ]);
-        });
+      expect(result).toEqual([14, 9, 0, 12, 6, 7, 10, 2, 8, 11, 5, 1, 4, 13, 3]);
     });
 
-    describe('suffixArray', () => {
-        test('handles sequences of length 2 when sequence[0] < sequence[1]', () => {
-            expect(suffixArray([ 0, 1 ], 2)).toEqual([ 0, 1 ]);
-        });
+    test('handles long strings', () => {
+      const s = ' 1 2 apple 3 4~4 5 apple 6 7!8 9 apple 1 2@apple 3 4#5 6 apple$apple%';
 
-        test('handles sequences of length 2 when sequence[1] < sequence[0]', () => {
-            expect(suffixArray([ 1, 0 ], 2)).toEqual([ 1, 0 ]);
-        });
+      const result = suffixArray(s, '^');
 
-        test('handles sequences of length 1', () => {
-            expect(suffixArray([ 0 ], 1)).toEqual([ 0 ]);
-        });
+      expect(result).toEqual([
+        0, 38, 2, 40, 48, 10, 50, 12, 16, 24, 54, 26, 30, 18, 4, 32, 56, 28, 52,
+        62, 68, 1, 39, 3, 41, 49, 11, 15, 51, 13, 53, 17, 25, 55, 27, 29, 31,
+        42, 69, 33, 57, 63, 9, 67, 19, 43, 5, 37, 47, 23, 61, 66, 36, 22, 46, 8,
+        60, 21, 45, 7, 35, 59, 65, 6,
+      ]);
+    });
+  });
 
-        test('handles sequences of length 0', () => {
-            expect(suffixArray([], 0)).toEqual([]);
-        });
+  describe('createSuffixArray', () => {
+    test('handles sequences of length 2 when sequence[0] < sequence[1]', () => {
+      expect(createSuffixArray([0, 1], 2)).toEqual([0, 1]);
     });
 
-    describe('stringToSequence', () => {
-        test('converts a string to an array of unicodes', () => {
-            const s = 'monsoonnomnoms';
-
-            const result = stringToSequence(s);
-
-            expect(result).toEqual([109, 111, 110, 115, 111, 111, 110, 110, 111, 109, 110, 111, 109, 115]);
-        });
+    test('handles sequences of length 2 when sequence[1] < sequence[0]', () => {
+      expect(createSuffixArray([1, 0], 2)).toEqual([1, 0]);
     });
 
-    describe('sample', () => {
-        test('returns the non sampled and sampled arrays', () => {
-            //                 m  o  n  s  o  o  n  n  o  m  n  o  m  s  $
-            const sequence = [ 1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 4, 5 ];
-
-            const result = sample(sequence, 5);
-
-            expect(result[ 0 ]).toEqual([
-                [ 0, 1 ],
-                [ 3, 4 ],
-                [ 6, 3 ],
-                [ 9, 1 ],
-                [ 12, 1 ]
-            ]);
-
-            expect(result[ 1 ]).toEqual([
-                [ 1, 2, 3, 4 ],
-                [ 4, 2, 2, 3 ],
-                [ 7, 3, 2, 1 ],
-                [ 10, 3, 2, 1 ],
-                [ 13, 4, 5, 5 ],
-                [ 2, 3, 4, 2 ],
-                [ 5, 2, 3, 3 ],
-                [ 8, 2, 1, 3 ],
-                [ 11, 2, 1, 4 ],
-                [ 14, 5, 5, 5 ]
-            ]);
-        });
-
-        test('pads b0 and b1 so the length is a multiple of 3', () => {
-            //                 m  o  n  s  o  o  n  n  o  m  n  o  m  $
-            const sequence = [ 1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 5 ];
-
-            const result = sample(sequence, 5);
-
-            expect(result[ 0 ]).toEqual([
-                [ 0, 1 ],
-                [ 3, 4 ],
-                [ 6, 3 ],
-                [ 9, 1 ],
-                [ 12, 1 ]
-            ]);
-
-            expect(result[ 1 ]).toEqual([
-                [ 1, 2, 3, 4 ],
-                [ 4, 2, 2, 3 ],
-                [ 7, 3, 2, 1 ],
-                [ 10, 3, 2, 1 ],
-                [ 13, 5, 5, 5 ],
-                [ 2, 3, 4, 2 ],
-                [ 5, 2, 3, 3 ],
-                [ 8, 2, 1, 3 ],
-                [ 11, 2, 1, 5 ]
-            ]);
-        });
-
-        test('handles sequences of length 3', () => {
-            //                 m  o  $
-            const sequence = [ 1, 2, 3 ];
-
-            const result = sample(sequence, 3);
-
-            expect(result[ 0 ]).toEqual([ [ 0, 1 ] ]);
-            expect(result[ 1 ]).toEqual([ [ 1, 2, 3, 3 ], [ 2, 3, 3, 3 ] ]);
-        });
-
-        test('throws an error if the sequence only contains 2 characters', () => {
-            //                 m  $
-            const sequence = [ 1, 2 ];
-
-            expect(() => sample(sequence, 2)).toThrow();
-        });
-
-        test('throws an error if the sequence only contains 1 character', () => {
-            //                 $
-            const sequence = [ 1 ];
-
-            expect(() => sample(sequence, 1)).toThrow();
-        });
-
-        test('throws an error if the sequence is empty', () => {
-            const sequence = [ ];
-
-            expect(() => sample(sequence, 0)).toThrow();
-        });
+    test('handles sequences of length 1', () => {
+      expect(createSuffixArray([0], 1)).toEqual([0]);
     });
 
-    describe('radixSort', () => {
-        test('sorts array elements with 3 entries', () => {
-            const input = [
-                [ 9, 4, 0 ],
-                [ 4, 2, 3 ],
-                [ 4, 2, 1 ],
-                [ 1, 0, 6 ],
-                [ 4, 2, 5 ],
-                [ 4, 6, 8 ]
-            ];
+    test('handles sequences of length 0', () => {
+      expect(createSuffixArray([], 0)).toEqual([]);
+    });
+  });
 
-            const result = radixSort(input);
+  describe('stringToSequence', () => {
+    test('converts a string to an array of unicodes', () => {
+      const s = 'monsoonnomnoms';
 
-            expect(result).toEqual([
-                [ 1, 0, 6 ],
-                [ 4, 2, 1 ],
-                [ 4, 2, 3 ],
-                [ 4, 2, 5 ],
-                [ 4, 6, 8 ],
-                [ 9, 4, 0 ]
-            ]);
-        });
+      const result = stringToSequence(s);
 
-        test('uses the given function to compute each subarray', () => {
-            const input = [
-                { a: 1, b: [ 9, 4, 0 ] },
-                { a: 2, b: [ 4, 2, 3 ] },
-                { a: 3, b: [ 4, 2, 1 ] },
-                { a: 4, b: [ 1, 0, 6 ] },
-                { a: 5, b: [ 4, 2, 5 ] },
-                { a: 6, b: [ 4, 6, 8 ] }
-            ];
+      expect(result).toEqual([
+        109, 111, 110, 115, 111, 111, 110, 110, 111, 109, 110, 111, 109, 115,
+      ]);
+    });
+  });
 
-            const result = radixSort(input, entry => entry.b);
+  describe('sampleSequence', () => {
+    test('returns the sampled arrays', () => {
+      //         m o n s o o n n o m n o m s $
+      const sequence = [1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 4, 5];
 
-            expect(result).toEqual([
-                { a: 4, b: [ 1, 0, 6 ] },
-                { a: 3, b: [ 4, 2, 1 ] },
-                { a: 2, b: [ 4, 2, 3 ] },
-                { a: 5, b: [ 4, 2, 5 ] },
-                { a: 6, b: [ 4, 6, 8 ] },
-                { a: 1, b: [ 9, 4, 0 ] }
-            ]);
-        });
+      const result = sampleSequence(sequence, 5);
 
-        test('returns the original array when there is only one entry to sort', () => {
-            const input = [
-                [ 1, 2 ]
-            ];
-
-            const result = radixSort(input);
-
-            expect(result).toBe(input);
-        });
-
-        test('returns the original array when there are no entries to sort', () => {
-            const input = [];
-
-            const result = radixSort(input);
-
-            expect(result).toBe(input);
-        });
-
-        test('returns the original array when the sub-arrays are empty', () => {
-            const input = [
-                [],
-                [],
-                []
-            ];
-
-            const result = radixSort(input);
-
-            expect(result).toBe(input);
-        });
-
-        test('throws an error if a sub-array is shorter than the first sub-array', () => {
-            const input = [
-                [ 9, 4, 0 ],
-                [ 4, 2, 3 ],
-                [ 4, 2, 1 ],
-                [ 1, 0, 6 ],
-                [ 4, 2 ],
-                [ 4, 6, 8 ]
-            ];
-
-            expect(() => radixSort(input)).toThrow(Error);
-        });
+      expect(result).toEqual([
+        [1, 2, 3, 4],
+        [4, 2, 2, 3],
+        [7, 3, 2, 1],
+        [10, 3, 2, 1],
+        [13, 4, 5, 5],
+        [2, 3, 4, 2],
+        [5, 2, 3, 3],
+        [8, 2, 1, 3],
+        [11, 2, 1, 4],
+        [14, 5, 5, 5],
+      ]);
     });
 
-    describe('samplesToSequence', () => {
-        test('converts an array of samples to a sequence', () => {
-            const input = [
-                [109, 111, 110],
-                [115, 111, 111],
-                [110, 110, 111],
-                [109, 111, 110]
-            ];
+    test('pads b0 and b1 so the length is a multiple of 3', () => {
+      //         m o n s o o n n o m n o m $
+      const sequence = [1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 5];
 
-            const output = samplesToSequence(input);
+      const result = sampleSequence(sequence, 5);
 
-            expect(output).toEqual({
-                samplesSequence: [0, 1, 2, 0],
-                unique: false,
-                samplesTerminator: 3
-            });
-        });
-
-        test('pads strings of length modulo 3 == 2', () => {
-            const input = [
-                [109, 111, 110],
-                [115, 111, 111],
-                [110, 110, 111],
-                [109, 111, 110],
-                [115, 111, 111]
-            ];
-
-            const output = samplesToSequence(input);
-
-            expect(output).toEqual({
-                samplesSequence: [0, 1, 2, 0, 1],
-                unique: false,
-                samplesTerminator: 3
-            });
-        });
-
-        test('does not pad strings of length modulo 3 == 0', () => {
-            const input = [
-                [109, 111, 110],
-                [115, 111, 111],
-                [115, 111, 111]
-            ];
-
-            const output = samplesToSequence(input);
-
-            expect(output).toEqual({
-                samplesSequence: [0, 1, 1],
-                unique: false,
-                samplesTerminator: 2
-            });
-        });
-
-        test('returns unique == true if all samples are unique', () => {
-            const input = [
-                [109, 111, 110],
-                [115, 111, 111],
-                [110, 110, 111],
-                [108, 111, 110],
-                [112, 111, 111]
-            ];
-
-            const output = samplesToSequence(input);
-
-            expect(output).toEqual({
-                samplesSequence: [0, 1, 2, 3, 4],
-                unique: true,
-                samplesTerminator: 5
-            });
-        });
+      expect(result).toEqual([
+        [1, 2, 3, 4],
+        [4, 2, 2, 3],
+        [7, 3, 2, 1],
+        [10, 3, 2, 1],
+        [13, 5, 5, 5],
+        [2, 3, 4, 2],
+        [5, 2, 3, 3],
+        [8, 2, 1, 3],
+        [11, 2, 1, 5],
+      ]);
     });
 
-    describe('sampleToString', () => {
-        test('converts an array of unicodes to the corresponding string', () => {
-            const input = [109, 111, 110, 115, 111, 111, 110, 110, 111, 109, 110, 111, 109, 115];
+    test('handles sequences of length 3', () => {
+      //         m o $
+      const sequence = [1, 2, 3];
 
-            const result = sampleToString(input);
+      const result = sampleSequence(sequence, 3);
 
-            expect(result).toEqual('monsoonnomnoms');
-        });
+      expect(result).toEqual([[1, 2, 3, 3], [2, 3, 3, 3]]);
     });
 
-    describe('sortedSamplesToSuffixes', () => {
-        test('populates the suffixes from the sorted samples', () => {
-            const sortedSamples = [
-                [ 14, 36, 36, 36 ],
-                [ 7, 110, 111, 109 ],
-                [ 10, 110, 111, 109 ],
-                [ 2, 110, 115, 111 ],
-                [ 8, 111, 109, 110 ],
-                [ 11, 111, 109, 115 ],
-                [ 5, 111, 110, 110 ],
-                [ 1, 111, 110, 115 ],
-                [ 4, 111, 111, 110 ],
-                [ 13, 115, 36, 36 ]
-            ];
+    test('throws an error if the sequence only contains 2 characters', () => {
+      //         m $
+      const sequence = [1, 2];
 
-            const result = sortedSamplesToSuffixes(sortedSamples);
-
-            expect(result).toEqual([ , 7, 3, , 8, 6, , 1, 4, , 2, 5, , 9, 0 ]);
-        });
+      expect(() => sampleSequence(sequence, 2)).toThrow();
     });
 
-    describe('createNonSampledPairs', () => {
-        test('pairs modulo 3 == 0 letters with the suffix rank of the following letter', () => {
-            //                 m  o  n  s  o  o  n  n  o  m  n  o  m  s  $
-            const sequence = [ 1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 4, 5 ];
+    test('throws an error if the sequence only contains 1 character', () => {
+      //         $
+      const sequence = [1];
 
-            const suffixes = [  , 7, 3,  , 8, 6,  , 1, 4,  , 2, 5,  , 9, 0 ];
-
-            const result = createNonSampledPairs(sequence, suffixes);
-
-            expect(result).toEqual([
-                [ 0, 1, 7 ],
-                [ 3, 4, 8 ],
-                [ 6, 3, 1 ],
-                [ 9, 1, 2 ],
-                [ 12, 1, 9 ]
-            ]);
-        });
+      expect(() => sampleSequence(sequence, 1)).toThrow();
     });
 
-    describe('merge', () => {
-        const sequence = [ 109, 111, 110, 115, 111, 111, 110, 110, 111, 109, 110, 111, 109, 115, 36 ];
+    test('throws an error if the sequence is empty', () => {
+      const sequence = [];
 
-        const sortedNonSampledPairs = [
-            [ 9, 109, 2 ],
-            [ 0, 109, 7 ],
-            [ 12, 109, 9 ],
-            [ 6, 110, 1 ],
-            [ 3, 115, 8 ]
-        ];
-
-        const sortedSamples = [
-            [ 14, 36, 36, 36 ],
-            [ 7, 110, 111, 109 ],
-            [ 10, 110, 111, 109 ],
-            [ 2, 110, 115, 111 ],
-            [ 8, 111, 109, 110 ],
-            [ 11, 111, 109, 115 ],
-            [ 5, 111, 110, 110 ],
-            [ 1, 111, 110, 115 ],
-            [ 4, 111, 111, 110 ],
-            [ 13, 115, 36, 36 ]
-        ];
-
-        const suffixes = [ 1, 7, 3, 4, 8, 6, 3, 1, 4, 0, 2, 5, 2, 9, 0 ];
-
-        const result = merge(sequence, sortedNonSampledPairs, sortedSamples, suffixes);
-
-        expect(result).toEqual([ 14, 9, 0, 12, 6, 7, 10, 2, 8, 11, 5, 1, 4, 13, 3 ]);
+      expect(() => sampleSequence(sequence, 0)).toThrow();
     });
+  });
+
+  describe('radixSort', () => {
+    test('sorts array elements with 3 entries', () => {
+      const input = [
+        [9, 4, 0],
+        [4, 2, 3],
+        [4, 2, 1],
+        [1, 0, 6],
+        [4, 2, 5],
+        [4, 6, 8],
+      ];
+
+      const result = radixSort(input);
+
+      expect(result).toEqual([
+        [1, 0, 6],
+        [4, 2, 1],
+        [4, 2, 3],
+        [4, 2, 5],
+        [4, 6, 8],
+        [9, 4, 0],
+      ]);
+    });
+
+    test('uses the given function to compute each subarray', () => {
+      const input = [
+        { a: 1, b: [9, 4, 0] },
+        { a: 2, b: [4, 2, 3] },
+        { a: 3, b: [4, 2, 1] },
+        { a: 4, b: [1, 0, 6] },
+        { a: 5, b: [4, 2, 5] },
+        { a: 6, b: [4, 6, 8] },
+      ];
+
+      const result = radixSort(input, entry => entry.b);
+
+      expect(result).toEqual([
+        { a: 4, b: [1, 0, 6] },
+        { a: 3, b: [4, 2, 1] },
+        { a: 2, b: [4, 2, 3] },
+        { a: 5, b: [4, 2, 5] },
+        { a: 6, b: [4, 6, 8] },
+        { a: 1, b: [9, 4, 0] },
+      ]);
+    });
+
+    test('returns the original array when there is only one entry to sort', () => {
+      const input = [
+        [1, 2],
+      ];
+
+      const result = radixSort(input);
+
+      expect(result).toBe(input);
+    });
+
+    test('returns the original array when there are no entries to sort', () => {
+      const input = [];
+
+      const result = radixSort(input);
+
+      expect(result).toBe(input);
+    });
+
+    test('returns the original array when the sub-arrays are empty', () => {
+      const input = [
+        [],
+        [],
+        [],
+      ];
+
+      const result = radixSort(input);
+
+      expect(result).toBe(input);
+    });
+
+    test('throws an error if a sub-array is shorter than the first sub-array', () => {
+      const input = [
+        [9, 4, 0],
+        [4, 2, 3],
+        [4, 2, 1],
+        [1, 0, 6],
+        [4, 2],
+        [4, 6, 8],
+      ];
+
+      expect(() => radixSort(input)).toThrow(Error);
+    });
+  });
+
+  describe('samplesToSequence', () => {
+    test('converts an array of samples to a sequence', () => {
+      const input = [
+        [109, 111, 110],
+        [115, 111, 111],
+        [110, 110, 111],
+        [109, 111, 110],
+      ];
+
+      const output = samplesToSequence(input);
+
+      expect(output).toEqual({
+        samplesSequence: [0, 1, 2, 0],
+        unique: false,
+        samplesTerminator: 3,
+      });
+    });
+
+    test('pads strings of length modulo 3 == 2', () => {
+      const input = [
+        [109, 111, 110],
+        [115, 111, 111],
+        [110, 110, 111],
+        [109, 111, 110],
+        [115, 111, 111],
+      ];
+
+      const output = samplesToSequence(input);
+
+      expect(output).toEqual({
+        samplesSequence: [0, 1, 2, 0, 1],
+        unique: false,
+        samplesTerminator: 3,
+      });
+    });
+
+    test('does not pad strings of length modulo 3 == 0', () => {
+      const input = [
+        [109, 111, 110],
+        [115, 111, 111],
+        [115, 111, 111],
+      ];
+
+      const output = samplesToSequence(input);
+
+      expect(output).toEqual({
+        samplesSequence: [0, 1, 1],
+        unique: false,
+        samplesTerminator: 2,
+      });
+    });
+
+    test('returns unique == true if all samples are unique', () => {
+      const input = [
+        [109, 111, 110],
+        [115, 111, 111],
+        [110, 110, 111],
+        [108, 111, 110],
+        [112, 111, 111],
+      ];
+
+      const output = samplesToSequence(input);
+
+      expect(output).toEqual({
+        samplesSequence: [0, 1, 2, 3, 4],
+        unique: true,
+        samplesTerminator: 5,
+      });
+    });
+  });
+
+  describe('sampleToString', () => {
+    test('converts an array of unicodes to the corresponding string', () => {
+      const input = [109, 111, 110, 115, 111, 111, 110, 110, 111, 109, 110, 111, 109, 115];
+
+      const result = sampleToString(input);
+
+      expect(result).toEqual('monsoonnomnoms');
+    });
+  });
+
+  describe('sortedSamplesToSuffixes', () => {
+    test('populates the suffixes from the sorted samples', () => {
+      const sortedSamples = [
+        [14, 36, 36, 36],
+        [7, 110, 111, 109],
+        [10, 110, 111, 109],
+        [2, 110, 115, 111],
+        [8, 111, 109, 110],
+        [11, 111, 109, 115],
+        [5, 111, 110, 110],
+        [1, 111, 110, 115],
+        [4, 111, 111, 110],
+        [13, 115, 36, 36],
+      ];
+
+      const result = sortedSamplesToSuffixes(sortedSamples);
+
+      expect(result).toEqual([
+        undefined, 7, 3, undefined, 8, 6, undefined, 1, 4, undefined, 2, 5, undefined, 9, 0,
+      ]);
+    });
+  });
+
+  describe('createNonSampledPairs', () => {
+    test('pairs modulo 3 == 0 letters with the suffix rank of the following letter', () => {
+      //         m o n s o o n n o m n o m s $
+      const sequence = [1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 4, 5];
+
+      const suffixes = [
+        undefined, 7, 3, undefined, 8, 6, undefined, 1, 4, undefined, 2, 5, undefined, 9, 0,
+      ];
+
+      const result = createNonSampledPairs(sequence, suffixes);
+
+      expect(result).toEqual([
+        [0, 1, 7],
+        [3, 4, 8],
+        [6, 3, 1],
+        [9, 1, 2],
+        [12, 1, 9],
+      ]);
+    });
+  });
+
+  describe('merge', () => {
+    const sequence = [109, 111, 110, 115, 111, 111, 110, 110, 111, 109, 110, 111, 109, 115, 36];
+
+    const sortedNonSampledPairs = [
+      [9, 109, 2],
+      [0, 109, 7],
+      [12, 109, 9],
+      [6, 110, 1],
+      [3, 115, 8],
+    ];
+
+    const sortedSamples = [
+      [14, 36, 36, 36],
+      [7, 110, 111, 109],
+      [10, 110, 111, 109],
+      [2, 110, 115, 111],
+      [8, 111, 109, 110],
+      [11, 111, 109, 115],
+      [5, 111, 110, 110],
+      [1, 111, 110, 115],
+      [4, 111, 111, 110],
+      [13, 115, 36, 36],
+    ];
+
+    const suffixes = [1, 7, 3, 4, 8, 6, 3, 1, 4, 0, 2, 5, 2, 9, 0];
+
+    const result = merge(sequence, sortedNonSampledPairs, sortedSamples, suffixes);
+
+    expect(result).toEqual([14, 9, 0, 12, 6, 7, 10, 2, 8, 11, 5, 1, 4, 13, 3]);
+  });
 });

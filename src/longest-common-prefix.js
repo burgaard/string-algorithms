@@ -32,35 +32,33 @@
  * @param {number[]} the corresponding suffix array.
  * @return number[] a longet common prefix array.
  */
-function getLongestCommonPrefix(sequence, suffixArray) {
-    const n = sequence.length;
-    if (n != suffixArray.length) {
-        throw new Error(`The sequence and suffix array lengths don't match: ${ n } != ${ suffixArray.length }`);
+export default function getLongestCommonPrefix(sequence, suffixArray) {
+  const n = sequence.length;
+  if (n !== suffixArray.length) {
+    throw new Error(`The sequence and suffix array lengths don't match: ${n} != ${suffixArray.length}`);
+  }
+
+  const rank = [];
+  const lcp = [];
+
+  for (let i = 0; i < n; i++) {
+    rank[suffixArray[i]] = i;
+  }
+
+  let h = 0;
+
+  for (let i = 0; i < n; i++) {
+    if (rank[i] > 0) {
+      const j = suffixArray[rank[i] - 1];
+      while (sequence[i + h] === sequence[j + h]) {
+        h++;
+      }
+      lcp[rank[i]] = h;
+      if (h > 0) {
+        h--;
+      }
     }
+  }
 
-    const rank = new Array();
-    const lcp = [];
-
-    for (let i = 0; i < n; i++) {
-        rank[ suffixArray[ i ] ] = i;
-    }
-
-    let h = 0;
-
-    for (let i = 0; i < n; i++) {
-        if (rank[ i ] > 0) {
-            const j = suffixArray[ rank[ i ] - 1 ];
-            while(sequence[ i + h ] == sequence[ j + h ]) {
-                h++;
-            }
-            lcp[ rank[ i ] ] = h;
-            if (h > 0) {
-                h--;
-            }
-        }
-    }
-
-    return lcp;
+  return lcp;
 }
-
-export default getLongestCommonPrefix;
