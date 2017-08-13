@@ -42,89 +42,151 @@ function suffixTree(s, terminator) {
         if (terminator.length != 1) {
             throw 'The terminator argument must be exactly one character';
         }
+
         // O(n)
-        if (s.indexOf(terminator)) {
+        if (s.indexOf(terminator) != -1) {
             throw 'The terminator argument must not be a member of s';
         }
     } else {
-
+        throw new Error('TODO');
     }
 
     // O(n)
-    const sa = getSuffixArray(s);
+    const sa = getSuffixArray(s, terminator);
 
     // O(n)
-    const lcp = getLongestCommonPrefix(sa);
+    const lcp = getLongestCommonPrefix(s + terminator, sa);
 
     // O(n)
-    const tree = fuseDuplicates(getCartesianTree(lcp));
+    const tree = createCartesianTree(lcp);
 
     // O(n)
-    addSuffixes(tree, [ ...sa ]);
+    addSuffixes(tree, sa);
+
+    if (sa.length != 0) {
+        throw new Error('Left-over suffix array entries');
+    }
+
+    print(s, tree);
 
     return tree;
 }
 
 // O(n) DFS pass to add suffix nodes to the cartesian LCP tree.
-function addSuffixes(node, sa) {
-    const children = node.getChildren();
-    for (let i = 0; i < children.length; i++) {
-        const child = children [ i ];
-        if (child != null) {
-            addSuffixes(child, sa);
-        } else {
-            children[ i ] = sa.shift();
+function addSuffixes(node, suffixArray) {
+    if (node.left != null) {
+        addSuffixes(node.left, suffixArray);
+    } else {
+        if (suffixArray.length == 0) {
+            throw new Error(`The suffix array is empty at index ${ node.value }`);
         }
+
+        node.left = suffixArray.shift();
     }
-}
 
-// O(n) fuse parent-child nodes with identical LCP values
-function fuseDuplicates(node) {
-    let i = 0;
-    while (i < node.children.length) {
-        let child = node.getChild(i);
-
-        fuseDuplicates(child);
-
-        while (child != null && child.value == node.value) {
-            // remove child and merge its children into this node's children
-            node.replaceChild(i, child.children);
-
-            child = node.getChild(i);
+    if (node.right != null) {
+        addSuffixes(node.right, suffixArray);
+    } else {
+        if (suffixArray.length == 0) {
+            throw new Error(`The suffix array is empty at index ${ node.value }`);
         }
 
-        i++;
+        node.right = suffixArray.shift();
     }
 }
 
 // O(n) cartesian tree construction
-function getCartesianTree(sequence) {
-    const { smaller, bigger } = nearestValues(sequence);
+function createCartesianTree(sequence) {
+    const n = sequence.length;
 
-    const nodes = {};
-    for (let i = 0; i < sequence.length; i++) {
-        const value = sequence[ i ];
-        const node = getNode(nodes, value);
+    let root = new Node(sequence[0]);
 
-        const smallerValue = smaller[ i ];
-        if (smallerValue != null) {
-            node.addChild(0, getNode(nodes, smallerValue));
+    let last = root;
+    for (let i = 1; i < n; i++) {
+        const node = new Node(sequence[i]);
+
+        while (last.value > sequence[i] && last != root) {
+            last = last.parent;
         }
 
-        const biggerValue = bigger[ i ];
-        if (biggerValue != null) {
-            node.addChild(1, getNode(nodes, biggerValue));
+        if (last.value > sequence[i]) {
+            root.parent = node;
+            node.left = root;
+            root = node;
+        } else if (last.right == null) {
+            last.right = node;
+            node.parent = last;
+        } else {
+            last.right.parent = node;
+            node.left = last.right;
+            last.right = node;
+            node.parent = last;
         }
     }
+
+    return prune(root);
 }
 
-// O(1) node lookup
-function getNode(nodes, value) {
-    if (value in nodes) {
-        return nodes[ value ];
+function prune(node) {
+    if (node.left != null) {
+        if (node.value == node.left.value) {
+            node.left = node.left.left;
+
+            if (node.right != null) {
+                if (node.left.right != null) {
+                    throw new Error('Can\'t fuse left node when both right nodes are defined');
+                }
+            } else {
+                node.right = node.left.right;
+            }
+        }
+
+        prune(node.left);
     }
 
-    return nodes[ value ] = new Node(value);
+    if (node.right != null) {
+        if (node.value == node.right.value) {
+            node.right = node.right.right;
+
+            if (node.left != null) {
+                if (node.right.left != null) {
+                    throw new Error('Can\'t fuse right node when both left nodes are defined');
+                }
+            } else {
+                node.left = node.right.left;
+            }
+        }
+
+        prune(node.right);
+    }
+
+    delete node.parent;
+
+    return node;
+}
+
+function print(s, node) {
+    switch(typeof node.left) {
+        case 'number':
+            console.log(s.slice(node.left));
+            break;
+        case 'object':
+            print(s, node.left);
+            break;
+        default:
+            throw new Error(typeof node.left);
+    }
+
+    switch(typeof node.right) {
+        case 'number':
+            console.log(s.slice(node.right));
+            break;
+        case 'object':
+            print(s, node.right);
+            break;
+        default:
+            throw new Error(typeof node.right);
+    }
 }
 
 /**
@@ -134,73 +196,16 @@ function getNode(nodes, value) {
  */
 function Node(value) {
     this.value = value;
-    this.children = new Array(2);
 
-    /**
-     * Sets the given node as a child at the given index.
-     * @param {number} index the child's index.
-     * @param {Node|number} node a Node instance or an integer index.
-     */
-    this.setChild = function(index, node) {
-        this.children[ index ] = node;
-    }
-
-    /**
-     * Replaces the child at the given index with zero or more children.
-     * @param {number} index the child's index.
-     * @param {Array.<Node|number>} children an array with Nodes and/or integer indices.
-     */
-    this.replaceChild(index, children) {
-        this.children.splice(index, 1, children);
-    }
-
-    /**
-     * Gets the child at the given index.
-     * @param {number} index the index of a child node.
-     * @return {Node|number} a node or an integer.
-     */
-    this.getChild = function(index) {
-        return this.children[ index ];
-    }
-
-    /**
-     * Gets the children of this node.
-     * @return {Array.<Node|number>} an array with Nodes and/or integers.
-     */
-    this.getChildren = function() {
-        return this.chilren;
-    }
+    this.parent = undefined;
+    this.left = undefined;
+    this.right = undefined;
 }
 
-// O(n) all nearest smaller/bigger values algorithm
-function nearestValues(sequence) {
-    const n = sequence.length;
+export default suffixTree;
 
-    const smaller = new Array(n);
-    const smallerStack = [];
-
-    const bigger = new Array(n);
-    const biggerStack = [];
-
-    for (let i = 0; i < n; i++) {
-        const x = sequence[i];
-
-        while (smallerStack.length > 0 && s[0] <= x) {
-            smallerStack.shift();
-        }
-        if (smallerStack.length > 0) {
-            result[i] = smallerStack[ 0 ];
-        }
-        smallerStack.unshift(x);
-
-        while (biggerStack.length > 0 && s[0] >= x) {
-            biggerStack.shift();
-        }
-        if (biggerStack.length > 0) {
-            result[i] = biggerStack[ 0 ];
-        }
-        biggerStack.unshift(x);
-    }
-
-    return { smaler, bigger };
-}
+export {
+    addSuffixes,
+    createCartesianTree,
+    prune
+};
