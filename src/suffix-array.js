@@ -209,6 +209,7 @@ export function createNonSampledPairs(sequence, ranks) {
   return nonSampledPairs;
 }
 
+/*
 function arrayToString(a) {
   return ['[']
     .concat(a.map(e => `  ${e},`))
@@ -238,15 +239,20 @@ function indirectStringIndexArrayToString(arrayArrays, sequence) {
     .concat('];')
     .join('\n');
 }
+*/
 
 export function merge(sequence, sortedNonSampledPairs, sortedSamples, ranks) {
+  /*
   console.log([
     '// merging ',
     `const sequence = ${sequenceToString(sequence)}`,
-    `const sortedNonSampledPairs = ${indirectStringIndexArrayToString(sortedNonSampledPairs, sequence)}`,
+    `const sortedNonSampledPairs
+       = ${indirectStringIndexArrayToString(sortedNonSampledPairs, sequence)}`,
     `const sortedSamples = ${indirectStringIndexArrayToString(sortedSamples, sequence)}`,
     `const ranks = ${arrayToString(ranks, sequence)}`,
   ].join('\n\n'));
+  */
+
   const result = [];
 
   let a = 0;
@@ -261,20 +267,15 @@ export function merge(sequence, sortedNonSampledPairs, sortedSamples, ranks) {
     let d = sequence[i] - sequence[j];
     switch (i % 3) {
       case 1:
-        // console.log(`comparing s[${i}] = ${String.fromCharCode(sequence[i])} to s[${j}] = ${String.fromCharCode(sequence[j])}`);
         if (d === 0) {
           d = ranks[i + 1] - ranks[j + 1];
-          // console.log(`comparing rank ${i + 1} = ${ranks[i + 1]} to ${j + 1} = ${ranks[j + 1]}`);
         }
         break;
       case 2:
-        // console.log(`comparing s[${i}] = ${String.fromCharCode(sequence[i])} to s[${j}] = ${String.fromCharCode(sequence[j])}`);
         if (d === 0) {
-          // console.log(`comparing s[${i + 1}] = ${String.fromCharCode(sequence[i + 1])} to s[${j + 1}] = ${String.fromCharCode(sequence[j + 1])}`);
           d = sequence[i + 1] - sequence[j + 1];
           if (d === 0) {
             d = ranks[i + 2] - ranks[j + 2];
-            // console.log(`comparing rank ${i + 2} = ${ranks[i + 2]} to ${j + 2} = ${ranks[j + 2]}`);
           }
         }
         break;
@@ -299,10 +300,11 @@ export function merge(sequence, sortedNonSampledPairs, sortedSamples, ranks) {
     result.push(sortedNonSampledPairs[a++][0]);
   }
 
+  /*
   console.log([
     `const result = ${stringIndexArrayToString(result, sequence)}`,
   ].join('\n\n'));
-
+  */
 
   return result;
 }
@@ -330,14 +332,17 @@ export function createSuffixArray(sequence, terminator) {
     // recurse to sort the suffixes of sortedSamplesSequence
     const recursiveSuffixArray = createSuffixArray(samplesSequence, samplesTerminator);
 
+    /*
     console.log([
       '// recursion ',
       `const sampledPositions = ${indirectStringIndexArrayToString(sampledPositions, sequence)}`,
       `const sortedSamples = ${indirectStringIndexArrayToString(sortedSamples, sequence)}`,
       `const samplesSequence = ${sequenceToString(samplesSequence)}`,
       `const samplesTerminator = ${String.fromCharCode(samplesTerminator)}`,
-      `const recursiveSuffixArray = ${stringIndexArrayToString(recursiveSuffixArray, samplesSequence)}`,
+      `const recursiveSuffixArray
+        = ${stringIndexArrayToString(recursiveSuffixArray, samplesSequence)}`,
     ].join('\n\n'));
+    */
 
     sortedSamples = recursiveSuffixArray.map(suffix => sampledPositions[suffix]);
     sortedSamples.pop(); // remove terminator

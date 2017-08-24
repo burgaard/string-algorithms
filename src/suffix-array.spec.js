@@ -113,6 +113,14 @@ describe('suffix-array', () => {
 
       expectSuffixArray(s, '$', result);
     });
+
+    test('handles no recursion', () => {
+      const s = 'abcdefghijklmnopqrstuvwxyz';
+
+      const result = suffixArray(s, '$');
+
+      expectSuffixArray(s, '$', result);
+    });
   });
 
   describe('createSuffixArray', () => {
@@ -306,7 +314,7 @@ describe('suffix-array', () => {
         [11, 111, 109, 115], // oms$
         [14, 36, 36, 36], //    $
       ];
-      
+
       const sortedSamples = [
         [14, 36, 36, 36], // $
         [7, 110, 111, 109], //  nomnoms$
@@ -340,50 +348,41 @@ describe('suffix-array', () => {
       });
     });
 
-    test('pads strings of length modulo 3 == 2', () => {
-      const input = [
-        [109, 111, 110],
-        [115, 111, 111],
-        [110, 110, 111],
-        [109, 111, 110],
-        [115, 111, 111],
-      ];
-
-      const output = samplesToSequence(input);
-
-      expect(output).toEqual({
-        unique: false,
-        samplesSequence: [32, 33, 34, 32, 33],
-        samplesTerminator: 35,
-      });
-    });
-
-    test('does not pad strings of length modulo 3 == 0', () => {
-      const input = [
-        [109, 111, 110],
-        [115, 111, 111],
-        [115, 111, 111],
-      ];
-
-      const output = samplesToSequence(input);
-
-      expect(output).toEqual({
-        unique: false,
-        samplesSequence: [32, 33, 33],
-        samplesTerminator: 34,
-      });
-    });
-
     test('returns unique == true if all samples are unique', () => {
-      const input = [
-        [1, 109, 111, 110],
-        [2, 115, 111, 111],
-        [3, 110, 110, 111],
-        [4, 108, 111, 110],
-        [5, 112, 111, 111],
+      const sampledPositions = [
+        [0, 97, 2], // abcdefghijklmnopqrstuvwxyz$
+        [3, 100, 4], // defghijklmnopqrstuvwxyz$
+        [6, 103, 6], // ghijklmnopqrstuvwxyz$
+        [9, 106, 8], // jklmnopqrstuvwxyz$
+        [12, 109, 10], // mnopqrstuvwxyz$
+        [15, 112, 12], // pqrstuvwxyz$
+        [18, 115, 14], // stuvwxyz$
+        [21, 118, 16], // vwxyz$
+        [24, 121, 18], // yz$
       ];
 
-      const output = samplesToSequence(input);
+      const sortedSamples = [
+        [26, 36, 36, 36], // $
+        [1, 98, 99, 100], // bcdefghijklmnopqrstuvwxyz$
+        [2, 99, 100, 101], // cdefghijklmnopqrstuvwxyz$
+        [4, 101, 102, 103], // efghijklmnopqrstuvwxyz$
+        [5, 102, 103, 104], // fghijklmnopqrstuvwxyz$
+        [7, 104, 105, 106], // hijklmnopqrstuvwxyz$
+        [8, 105, 106, 107], // ijklmnopqrstuvwxyz$
+        [10, 107, 108, 109], // klmnopqrstuvwxyz$
+        [11, 108, 109, 110], // lmnopqrstuvwxyz$
+        [13, 110, 111, 112], // nopqrstuvwxyz$
+        [14, 111, 112, 113], // opqrstuvwxyz$
+        [16, 113, 114, 115], // qrstuvwxyz$
+        [17, 114, 115, 116], // rstuvwxyz$
+        [19, 116, 117, 118], // tuvwxyz$
+        [20, 117, 118, 119], // uvwxyz$
+        [22, 119, 120, 121], // wxyz$
+        [23, 120, 121, 122], // xyz$
+        [25, 122, 36, 36], // z$
+      ];
+
+      const output = samplesToSequence(sampledPositions, sortedSamples);
 
       expect(output).toEqual({
         unique: true,
@@ -506,14 +505,14 @@ describe('suffix-array', () => {
         33, // !
         42, // *
       ];
-      
+
       const sortedNonSampledPairs = [
         [9, 33, 7], // !*
         [3, 34, 6], // ")#&$%!*
         [6, 38, 3], // &$%!*
         [0, 39, 5], // '("")#&$%!*
       ];
-      
+
       const sortedSamples = [
         [2, 34, 34, 41], // "")#&$%!*
         [5, 35, 38, 36], // #&$%!*
@@ -523,7 +522,7 @@ describe('suffix-array', () => {
         [4, 41, 35, 38], // )#&$%!*
         [10, 42, 42, 42], // *
       ];
-      
+
       const ranks = [
         undefined,
         5,
