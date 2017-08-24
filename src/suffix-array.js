@@ -77,12 +77,7 @@ export function radixSort(entries, getEntry = entry => entry) {
   return entries;
 }
 
-export function createNonSample(block, sequence) {
-  const suffix = block * 3;
-  return [suffix, sequence[suffix]]; // prefix nonsample with suffix
-}
-
-export function createSample(block, offset, sequence, length = 3) {
+function createSample(block, offset, sequence, length = 3) {
   const suffix = (block * 3) + offset;
   return [suffix, ...sequence.slice(suffix, suffix + length)]; // prefix triplet with suffix
 }
@@ -115,11 +110,11 @@ export function sampleSequence(sequence, terminator) {
     case 2:
       lastB1.push(sequence[i * 3]);
       b1.push(lastB1);
-      lastB1 = [(i * 3) + 1, terminator, terminator, terminator];
-      lastB2.push(sequence[i * 3], terminator);
+      lastB1 = [(i * 3) + 1];
+      lastB2.push(sequence[i * 3]);
       break;
     case 1:
-      lastB1.push(sequence[i * 3], terminator);
+      lastB1.push(sequence[i * 3]);
       lastB2.push(sequence[i * 3]);
       break;
     case 0:
@@ -146,105 +141,168 @@ export function sampleToString(sample) {
   return String.fromCharCode.apply(this, sample);
 }
 
-/**
-* Converts an array of samples to a sequence with each sample's rank.
-*/
-export function samplesToSequence(samples) {
+// Converts an array of samples to a sequence with each sample's rank.
+export function samplesToSequence(unsorted, sorted, rankOffset = 0x21 /* ! */) {
+  // rank sorted samples
   const sampleToRank = {};
-  let rank = 0;
-  const samplesSequence = [];
-  for (const sample of samples) {
-    const sampleString = sampleToString(sample);
+  let rank = rankOffset;
+  let unique = true;
+  for (const sample of sorted) {
+    const sampleString = sampleToString(sample.slice(1));
     if (sampleString in sampleToRank) {
-      samplesSequence.push(sampleToRank[sampleString]);
+      unique = false;
     } else {
-      samplesSequence.push(rank);
       sampleToRank[sampleString] = rank++;
     }
   }
 
+  if (unique) {
+    return {
+      unique: true,
+    };
+  }
+
+  // construct new sequence based on the unsorted samples and their ranks
+  const samplesSequence = unsorted.map(
+    sample => sampleToRank[sampleToString(sample.slice(1))],
+  );
+
   return {
+    unique: false,
     samplesSequence,
-    unique: rank === samples.length,
     samplesTerminator: rank,
   };
 }
 
-export function sortedSamplesToSuffixes(sortedSamples) {
-  const result = new Array(sortedSamples.length);
-  sortedSamples.forEach((sample, i) => result[sample[0]] = i);
+export function rankSortedSamples(n, sortedSamples) {
+  const r = n % 3;
+  const m = n + (r !== 0 ? 3 - r : 0);
+  const result = new Array(m);
+
+  let rank = 1;
+  sortedSamples.forEach(sample => (sample !== undefined ? result[sample[0]] = rank++ : 0));
+
+  switch (r) {
+    default:
+      break;
+    case 2:
+      result[n + 2] = 0;
+      // fall through
+    case 1:
+      result[n + 1] = 0;
+      break;
+  }
   return result;
 }
 
-export function createNonSampledPairs(sequence, suffixes) {
+export function createNonSampledPairs(sequence, ranks) {
   const n = sequence.length;
 
   const nonSampledPairs = [];
 
   let i = 0;
   while (i < n) {
-    nonSampledPairs.push([i, sequence[i], suffixes[i + 1]]); // prefix pair with suffix
+    nonSampledPairs.push([i, sequence[i], ranks[i + 1]]);
     i += 3;
   }
 
   return nonSampledPairs;
 }
 
-export function sortedNonSampledPairsToSuffixes(suffixes, sortedNonSampledPairs) {
-  let rank = 0;
-  sortedNonSampledPairs.forEach(nonSample => suffixes[nonSample[0]] = rank++);
+function arrayToString(a) {
+  return ['[']
+    .concat(a.map(e => `  ${e},`))
+    .concat('];')
+    .join('\n');
 }
 
-export function merge(sequence, sortedNonSampledPairs, sortedSamples, suffixes) {
+function sequenceToString(sequence) {
+  return ['[']
+    .concat(sequence.map(e => `  ${e}, // ${String.fromCharCode(e)}`))
+    .concat('];')
+    .join('\n');
+}
+
+function stringIndexArrayToString(a, sequence) {
+  return ['[']
+    .concat(a.map(e => `  ${e}, // ${sequence.slice(e).map(c => String.fromCharCode(c)).join('')}`))
+    .concat('];')
+    .join('\n');
+}
+
+function indirectStringIndexArrayToString(arrayArrays, sequence) {
+  return ['[']
+    .concat(arrayArrays.map(e => (e != null
+      ? `  [${e.join(', ')}], // ${sequence.slice(e[0]).map(c => String.fromCharCode(c)).join('')}`
+      : '  undefined')))
+    .concat('];')
+    .join('\n');
+}
+
+export function merge(sequence, sortedNonSampledPairs, sortedSamples, ranks) {
+  console.log([
+    '// merging ',
+    `const sequence = ${sequenceToString(sequence)}`,
+    `const sortedNonSampledPairs = ${indirectStringIndexArrayToString(sortedNonSampledPairs, sequence)}`,
+    `const sortedSamples = ${indirectStringIndexArrayToString(sortedSamples, sequence)}`,
+    `const ranks = ${arrayToString(ranks, sequence)}`,
+  ].join('\n\n'));
   const result = [];
 
   let a = 0;
   let b = 0;
-  while (a < sortedNonSampledPairs.length) {
+  while (a < sortedNonSampledPairs.length && b < sortedSamples.length) {
+    const i = sortedSamples[b][0];
     const j = sortedNonSampledPairs[a][0];
     if (j % 3 !== 0) {
       throw new Error('Sorted non-samples should only contain offset 0 (mod 3) entries');
     }
 
-    nextNonSampled: while (b < sortedSamples.length) {
-      const i = sortedSamples[b][0];
-      switch (i % 3) {
-        case 1:
-          if ((sequence[i] < sequence[j])
-          || ((sequence[i] === sequence[j])
-            && (suffixes[i + 1] < suffixes[j + 1]))) {
-            result.push(sortedSamples[b++][0]);
-          } else {
-            result.push(sortedNonSampledPairs[a++][0]);
-            break nextNonSampled;
+    let d = sequence[i] - sequence[j];
+    switch (i % 3) {
+      case 1:
+        // console.log(`comparing s[${i}] = ${String.fromCharCode(sequence[i])} to s[${j}] = ${String.fromCharCode(sequence[j])}`);
+        if (d === 0) {
+          d = ranks[i + 1] - ranks[j + 1];
+          // console.log(`comparing rank ${i + 1} = ${ranks[i + 1]} to ${j + 1} = ${ranks[j + 1]}`);
+        }
+        break;
+      case 2:
+        // console.log(`comparing s[${i}] = ${String.fromCharCode(sequence[i])} to s[${j}] = ${String.fromCharCode(sequence[j])}`);
+        if (d === 0) {
+          // console.log(`comparing s[${i + 1}] = ${String.fromCharCode(sequence[i + 1])} to s[${j + 1}] = ${String.fromCharCode(sequence[j + 1])}`);
+          d = sequence[i + 1] - sequence[j + 1];
+          if (d === 0) {
+            d = ranks[i + 2] - ranks[j + 2];
+            // console.log(`comparing rank ${i + 2} = ${ranks[i + 2]} to ${j + 2} = ${ranks[j + 2]}`);
           }
-          break;
-        case 2:
-          if ((sequence[i] < sequence[j])
-          || ((sequence[i] === sequence[j])
-            && (sequence[i + 1] < sequence[j + 1]))
-          || ((sequence[i] === sequence[j])
-            && (sequence[i + 1] === sequence[j + 1])
-            && (suffixes[i + 2] < suffixes[j + 2]))) {
-            result.push(sortedSamples[b++][0]);
-          } else {
-            result.push(sortedNonSampledPairs[a++][0]);
-            break nextNonSampled;
-          }
-          break;
-        default:
-          throw new Error('Sorted samples should only contain offset != 0 (mod 3) entries');
-      }
+        }
+        break;
+      default:
+        throw new Error('Sorted samples should only contain offset != 0 (mod 3) entries');
     }
 
-    if (b === sortedSamples.length) {
-      result.push(sortedNonSampledPairs[a++][0]);
+    if (d <= 0) {
+      result.push(i);
+      b++;
+    } else {
+      result.push(j);
+      a++;
     }
   }
 
-  while (b < sortedSamples.lenth) {
+  while (b < sortedSamples.length) {
     result.push(sortedSamples[b++][0]);
   }
+
+  while (a < sortedNonSampledPairs.length) {
+    result.push(sortedNonSampledPairs[a++][0]);
+  }
+
+  console.log([
+    `const result = ${stringIndexArrayToString(result, sequence)}`,
+  ].join('\n\n'));
+
 
   return result;
 }
@@ -266,24 +324,33 @@ export function createSuffixArray(sequence, terminator) {
   const sampledPositions = sampleSequence(sequence, terminator);
 
   let sortedSamples = radixSort(sampledPositions, entry => entry.slice(1));
-  const { samplesSequence, unique, samplesTerminator } = samplesToSequence(sortedSamples);
+  const { unique, samplesSequence, samplesTerminator }
+    = samplesToSequence(sampledPositions, sortedSamples, 0x21 /* ! */);
   if (!unique) {
     // recurse to sort the suffixes of sortedSamplesSequence
     const recursiveSuffixArray = createSuffixArray(samplesSequence, samplesTerminator);
-    const sortedSamplesSequence = recursiveSuffixArray.map(suffix => samplesSequence[suffix]);
-    sortedSamples = sortedSamplesSequence.map(rank => sortedSamples[rank]);
+
+    console.log([
+      '// recursion ',
+      `const sampledPositions = ${indirectStringIndexArrayToString(sampledPositions, sequence)}`,
+      `const sortedSamples = ${indirectStringIndexArrayToString(sortedSamples, sequence)}`,
+      `const samplesSequence = ${sequenceToString(samplesSequence)}`,
+      `const samplesTerminator = ${String.fromCharCode(samplesTerminator)}`,
+      `const recursiveSuffixArray = ${stringIndexArrayToString(recursiveSuffixArray, samplesSequence)}`,
+    ].join('\n\n'));
+
+    sortedSamples = recursiveSuffixArray.map(suffix => sampledPositions[suffix]);
+    sortedSamples.pop(); // remove terminator
   }
 
-  const suffixes = sortedSamplesToSuffixes(sortedSamples);
+  const ranks = rankSortedSamples(n, sortedSamples);
 
   const sortedNonSampledPairs = radixSort(
-    createNonSampledPairs(sequence, suffixes), entry => entry.slice(1),
+    createNonSampledPairs(sequence, ranks), entry => entry.slice(1),
   );
 
-  let rank = 0;
-  sortedNonSampledPairs.forEach(nonSample => suffixes[nonSample[0]] = rank++);
-
-  return merge(sequence, sortedNonSampledPairs, sortedSamples, suffixes);
+  const result = merge(sequence, sortedNonSampledPairs, sortedSamples, ranks);
+  return result;
 }
 
 /**
@@ -297,6 +364,9 @@ export function createSuffixArray(sequence, terminator) {
 export default function suffixArray(s, terminator) {
   const sequence = stringToSequence(s);
   const result = createSuffixArray(sequence, terminator.charCodeAt(0));
+  if ((sequence.length + 1) !== result.length) {
+    throw new Error(`String and suffix array lengths differ ${sequence.length} + 1 != ${result.length}`);
+  }
 
   return result;
 }

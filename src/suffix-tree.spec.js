@@ -26,9 +26,80 @@ import suffixTree, {
 } from './suffix-tree';
 
 describe('suffix-tree', () => {
-  test('...', () => {
+  test('returns the suffix tree corresponding to the given string', () => {
     const result = suffixTree('aabaaabbabaaaba', '$');
 
-    expect(result).toEqual([]);
+    expect(result).toEqual(
+      {
+        left: 15,
+        right: {
+          left: {
+            left: {
+              left: {
+                left: {
+                  left: {
+                    left: {
+                      left: {
+                        left: {
+                          left: {
+                            left: {
+                              left: {
+                                left: {
+                                  left: {
+                                    left: 12,
+                                    right: 3,
+                                    value: 2,
+                                  },
+                                  right: 0,
+                                  value: 1,
+                                },
+                                right: 13,
+                                value: 2,
+                              },
+                              right: 14,
+                              value: 1,
+                            },
+                            right: 10,
+                            value: 4,
+                          },
+                          right: 4,
+                          value: 2,
+                        },
+                        right: 11,
+                        value: 3,
+                      },
+                      right: 1,
+                      value: 1,
+                    },
+                    right: 8,
+                    value: 6,
+                  },
+                  right: 5,
+                  value: 2,
+                },
+                right: 2,
+                value: 0,
+              },
+              right: 9,
+              value: 5,
+            },
+            right: 7,
+            value: 2,
+          },
+          right: 6,
+          value: 1,
+        },
+        value: undefined,
+      },
+    );
+  });
+
+  test('returns the suffix tree corresponding to the given string', () => {
+    const result = suffixTree('1apple2!3apple4@5apple6#', '$');
+
+    expect(result).toEqual(
+      {
+      },
+    );
   });
 });

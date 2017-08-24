@@ -27,10 +27,66 @@ import suffixArray, {
   radixSort,
   samplesToSequence,
   sampleToString,
-  sortedSamplesToSuffixes,
+  rankSortedSamples,
   createNonSampledPairs,
   merge,
 } from './suffix-array';
+
+function expectStringOrder(a, b) {
+  let [i, j] = [0, 0];
+  while (i < a.length && j < b.length && a.charCodeAt(i) === b.charCodeAt(j)) {
+    i++;
+    j++;
+  }
+
+  let result;
+
+  // eslint-disable-next-line default-case
+  switch ((i === a.length ? 1 : 0) + (j === b.length ? 2 : 0)) {
+    case 0:
+      // a[i] !== b[j]
+      result = a.charCodeAt(i) - b.charCodeAt(j);
+      break;
+    case 1:
+      // b is a substring of a
+      result = 1;
+      break;
+    case 2:
+      // a is a substring of b
+      return;
+    case 3:
+      // a and b are equal
+      return;
+  }
+
+  if (result > 0) {
+    // eslint-disable-next-line no-console
+    throw new Error(`Expected a to compare less than or equal to b:\n    a: ${a}\n    b: ${b}'`);
+  }
+}
+
+function expectSuffixArray(s, terminator, sa) {
+  const n = s.length;
+  expect(sa.length).toEqual(n + 1);
+
+  const sequence = s + terminator;
+  const counter = {};
+
+  let prev = sa[0];
+  counter[prev] = 1;
+  expect(prev).toBeLessThanOrEqual(n);
+  for (let i = 1; i <= n; i++) {
+    const next = sa[i];
+    expect(next).toBeLessThanOrEqual(n);
+
+    expect(counter).not.toHaveProperty(`${next}`);
+    counter[next] = 1;
+
+    expectStringOrder(sequence.slice(prev), sequence.slice(next));
+
+    prev = next;
+  }
+}
 
 describe('suffix-array', () => {
   describe('suffixArray', () => {
@@ -39,7 +95,7 @@ describe('suffix-array', () => {
 
       const result = suffixArray(s, '$');
 
-      expect(result).toEqual([14, 9, 0, 12, 6, 7, 10, 2, 8, 11, 5, 1, 4, 13, 3]);
+      expectSuffixArray(s, '$', result);
     });
 
     test('handles long strings', () => {
@@ -47,12 +103,15 @@ describe('suffix-array', () => {
 
       const result = suffixArray(s, '^');
 
-      expect(result).toEqual([
-        0, 38, 2, 40, 48, 10, 50, 12, 16, 24, 54, 26, 30, 18, 4, 32, 56, 28, 52,
-        62, 68, 1, 39, 3, 41, 49, 11, 15, 51, 13, 53, 17, 25, 55, 27, 29, 31,
-        42, 69, 33, 57, 63, 9, 67, 19, 43, 5, 37, 47, 23, 61, 66, 36, 22, 46, 8,
-        60, 21, 45, 7, 35, 59, 65, 6,
-      ]);
+      expectSuffixArray(s, '^', result);
+    });
+
+    test('handles recursion', () => {
+      const s = 'abc3abc2abc1';
+
+      const result = suffixArray(s, '$');
+
+      expectSuffixArray(s, '$', result);
     });
   });
 
@@ -88,7 +147,7 @@ describe('suffix-array', () => {
 
   describe('sampleSequence', () => {
     test('returns the sampled arrays', () => {
-      //         m o n s o o n n o m n o m s $
+      //                m  o  n  s  o  o  n  n  o  m  n  o  m  s  $
       const sequence = [1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 4, 5];
 
       const result = sampleSequence(sequence, 5);
@@ -108,7 +167,7 @@ describe('suffix-array', () => {
     });
 
     test('pads b0 and b1 so the length is a multiple of 3', () => {
-      //         m o n s o o n n o m n o m $
+      //                m  o  n  s  o  o  n  n  o  m  n  o  m  $
       const sequence = [1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 5];
 
       const result = sampleSequence(sequence, 5);
@@ -159,23 +218,13 @@ describe('suffix-array', () => {
   describe('radixSort', () => {
     test('sorts array elements with 3 entries', () => {
       const input = [
-        [9, 4, 0],
-        [4, 2, 3],
-        [4, 2, 1],
-        [1, 0, 6],
-        [4, 2, 5],
-        [4, 6, 8],
+        [9, 4, 0], [4, 2, 3], [4, 2, 1], [1, 0, 6], [4, 2, 5], [4, 6, 8],
       ];
 
       const result = radixSort(input);
 
       expect(result).toEqual([
-        [1, 0, 6],
-        [4, 2, 1],
-        [4, 2, 3],
-        [4, 2, 5],
-        [4, 6, 8],
-        [9, 4, 0],
+        [1, 0, 6], [4, 2, 1], [4, 2, 3], [4, 2, 5], [4, 6, 8], [9, 4, 0],
       ]);
     });
 
@@ -221,9 +270,7 @@ describe('suffix-array', () => {
 
     test('returns the original array when the sub-arrays are empty', () => {
       const input = [
-        [],
-        [],
-        [],
+        [], [], [],
       ];
 
       const result = radixSort(input);
@@ -247,19 +294,49 @@ describe('suffix-array', () => {
 
   describe('samplesToSequence', () => {
     test('converts an array of samples to a sequence', () => {
-      const input = [
-        [109, 111, 110],
-        [115, 111, 111],
-        [110, 110, 111],
-        [109, 111, 110],
+      const sampledPositions = [
+        [1, 111, 110, 115], //  onsoonnomnoms$
+        [4, 111, 111, 110], //  oonnomnoms$
+        [7, 110, 111, 109], //  nomnoms$
+        [10, 110, 111, 109], // noms$
+        [13, 115, 36, 36], //   s$
+        [2, 110, 115, 111], //  nsoonnomnoms$
+        [5, 111, 110, 110], //  onnomnoms$
+        [8, 111, 109, 110], //  omnoms$
+        [11, 111, 109, 115], // oms$
+        [14, 36, 36, 36], //    $
+      ];
+      
+      const sortedSamples = [
+        [14, 36, 36, 36], // $
+        [7, 110, 111, 109], //  nomnoms$
+        [10, 110, 111, 109], // noms$
+        [2, 110, 115, 111], //  nsoonnomnoms$
+        [8, 111, 109, 110], //  omnoms$
+        [11, 111, 109, 115], // oms$
+        [5, 111, 110, 110], //  onnomnoms$
+        [1, 111, 110, 115], //  onsoonnomnoms$
+        [4, 111, 111, 110], //  oonnomnoms$
+        [13, 115, 36, 36], //   s$
       ];
 
-      const output = samplesToSequence(input);
+      const output = samplesToSequence(sampledPositions, sortedSamples);
 
       expect(output).toEqual({
-        samplesSequence: [0, 1, 2, 0],
         unique: false,
-        samplesTerminator: 3,
+        samplesSequence: [
+          39, // '
+          40, // (
+          34, // "
+          34, // "
+          41, // )
+          35, // #
+          38, // &
+          36, // $
+          37, // %
+          33, // !
+        ],
+        samplesTerminator: 42,
       });
     });
 
@@ -275,9 +352,9 @@ describe('suffix-array', () => {
       const output = samplesToSequence(input);
 
       expect(output).toEqual({
-        samplesSequence: [0, 1, 2, 0, 1],
         unique: false,
-        samplesTerminator: 3,
+        samplesSequence: [32, 33, 34, 32, 33],
+        samplesTerminator: 35,
       });
     });
 
@@ -291,27 +368,25 @@ describe('suffix-array', () => {
       const output = samplesToSequence(input);
 
       expect(output).toEqual({
-        samplesSequence: [0, 1, 1],
         unique: false,
-        samplesTerminator: 2,
+        samplesSequence: [32, 33, 33],
+        samplesTerminator: 34,
       });
     });
 
     test('returns unique == true if all samples are unique', () => {
       const input = [
-        [109, 111, 110],
-        [115, 111, 111],
-        [110, 110, 111],
-        [108, 111, 110],
-        [112, 111, 111],
+        [1, 109, 111, 110],
+        [2, 115, 111, 111],
+        [3, 110, 110, 111],
+        [4, 108, 111, 110],
+        [5, 112, 111, 111],
       ];
 
       const output = samplesToSequence(input);
 
       expect(output).toEqual({
-        samplesSequence: [0, 1, 2, 3, 4],
         unique: true,
-        samplesTerminator: 5,
       });
     });
   });
@@ -326,39 +401,30 @@ describe('suffix-array', () => {
     });
   });
 
-  describe('sortedSamplesToSuffixes', () => {
-    test('populates the suffixes from the sorted samples', () => {
-      const sortedSamples = [
-        [14, 36, 36, 36],
-        [7, 110, 111, 109],
-        [10, 110, 111, 109],
-        [2, 110, 115, 111],
-        [8, 111, 109, 110],
-        [11, 111, 109, 115],
-        [5, 111, 110, 110],
-        [1, 111, 110, 115],
-        [4, 111, 111, 110],
-        [13, 115, 36, 36],
-      ];
-
-      const result = sortedSamplesToSuffixes(sortedSamples);
-
-      expect(result).toEqual([
-        undefined, 7, 3, undefined, 8, 6, undefined, 1, 4, undefined, 2, 5, undefined, 9, 0,
-      ]);
-    });
-  });
-
   describe('createNonSampledPairs', () => {
     test('pairs modulo 3 == 0 letters with the suffix rank of the following letter', () => {
-      //         m o n s o o n n o m n o m s $
+      //                m  o  n  s  o  o  n  n  o  m  n  o  m  s  $
       const sequence = [1, 2, 3, 4, 2, 2, 3, 3, 2, 1, 3, 2, 1, 4, 5];
 
-      const suffixes = [
-        undefined, 7, 3, undefined, 8, 6, undefined, 1, 4, undefined, 2, 5, undefined, 9, 0,
+      const ranks = [
+        undefined,
+        7,
+        3,
+        undefined,
+        8,
+        6,
+        undefined,
+        1,
+        4,
+        undefined,
+        2,
+        5,
+        undefined,
+        9,
+        0,
       ];
 
-      const result = createNonSampledPairs(sequence, suffixes);
+      const result = createNonSampledPairs(sequence, ranks);
 
       expect(result).toEqual([
         [0, 1, 7],
@@ -370,34 +436,124 @@ describe('suffix-array', () => {
     });
   });
 
+  describe('rankSortedSamples', () => {
+    test('ranks the sorted samples', () => {
+      const sortedSamples = [
+        [7, 33, 51, 97], //     !3apple4@5apple6#$
+        [23, 35, 36, 36], //    #$
+        [8, 51, 97, 112], //    3apple4@5apple6#$
+        [14, 52, 64, 53], //    4@5apple6#$
+        [16, 53, 97, 112], //   5apple6#$
+        [22, 54, 35, 36], //    6#$
+        [1, 97, 112, 112], //   apple2!3apple4@5apple6#$
+        [17, 97, 112, 112], //  apple6#$
+        [5, 101, 50, 33], //    e2!3apple4@5apple6#$
+        [13, 101, 52, 64], //   e4@5apple6#$
+        [4, 108, 101, 50], //   le2!3apple4@5apple6#$
+        [20, 108, 101, 54], //  le6#$
+        [19, 112, 108, 101], // ple6#$
+        [11, 112, 108, 101], // ple4@5apple6#$
+        [10, 112, 112, 108], // pple4@5apple6#$
+        [2, 112, 112, 108], //  pple2!3apple4@5apple6#$
+      ];
+
+      const result = rankSortedSamples(25, sortedSamples);
+
+      expect(result).toEqual([
+        undefined,
+        7,
+        16,
+        undefined,
+        11,
+        9,
+        undefined,
+        1,
+        3,
+        undefined,
+        15,
+        14,
+        undefined,
+        10,
+        4,
+        undefined,
+        5,
+        8,
+        undefined,
+        13,
+        12,
+        undefined,
+        6,
+        2,
+        undefined,
+        undefined,
+        0,
+      ]);
+    });
+  });
+
   describe('merge', () => {
-    const sequence = [109, 111, 110, 115, 111, 111, 110, 110, 111, 109, 110, 111, 109, 115, 36];
+    test('sorts the non sampled and sampled tuples', () => {
+      const sequence = [
+        39, // '
+        40, // (
+        34, // "
+        34, // "
+        41, // )
+        35, // #
+        38, // &
+        36, // $
+        37, // %
+        33, // !
+        42, // *
+      ];
+      
+      const sortedNonSampledPairs = [
+        [9, 33, 7], // !*
+        [3, 34, 6], // ")#&$%!*
+        [6, 38, 3], // &$%!*
+        [0, 39, 5], // '("")#&$%!*
+      ];
+      
+      const sortedSamples = [
+        [2, 34, 34, 41], // "")#&$%!*
+        [5, 35, 38, 36], // #&$%!*
+        [7, 36, 37, 33], // $%!*
+        [8, 37, 33, 42], // %!*
+        [1, 40, 34, 34], // ("")#&$%!*
+        [4, 41, 35, 38], // )#&$%!*
+        [10, 42, 42, 42], // *
+      ];
+      
+      const ranks = [
+        undefined,
+        5,
+        1,
+        undefined,
+        6,
+        2,
+        undefined,
+        3,
+        4,
+        undefined,
+        7,
+        0,
+      ];
 
-    const sortedNonSampledPairs = [
-      [9, 109, 2],
-      [0, 109, 7],
-      [12, 109, 9],
-      [6, 110, 1],
-      [3, 115, 8],
-    ];
+      const result = merge(sequence, sortedNonSampledPairs, sortedSamples, ranks);
 
-    const sortedSamples = [
-      [14, 36, 36, 36],
-      [7, 110, 111, 109],
-      [10, 110, 111, 109],
-      [2, 110, 115, 111],
-      [8, 111, 109, 110],
-      [11, 111, 109, 115],
-      [5, 111, 110, 110],
-      [1, 111, 110, 115],
-      [4, 111, 111, 110],
-      [13, 115, 36, 36],
-    ];
-
-    const suffixes = [1, 7, 3, 4, 8, 6, 3, 1, 4, 0, 2, 5, 2, 9, 0];
-
-    const result = merge(sequence, sortedNonSampledPairs, sortedSamples, suffixes);
-
-    expect(result).toEqual([14, 9, 0, 12, 6, 7, 10, 2, 8, 11, 5, 1, 4, 13, 3]);
+      expect(result).toEqual([
+        9, // !*
+        2, // "")#&$%!*
+        3, // ")#&$%!*
+        5, // #&$%!*
+        7, // $%!*
+        8, // %!*
+        6, // &$%!*
+        0, // '("")#&$%!*
+        1, // ("")#&$%!*
+        4, // )#&$%!*
+        10, // *
+      ]);
+    });
   });
 });

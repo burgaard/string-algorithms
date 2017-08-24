@@ -26,8 +26,8 @@
  * SOFTWARE.
  */
 
-import getSuffixArray from './suffix-array';
-import getLongestCommonPrefix from './longest-common-prefix';
+import suffixArray from './suffix-array';
+import longestCommonPrefix from './longest-common-prefix';
 
 /**
  * Node instances have a value, which is the node's LCP rank and at least two
@@ -43,36 +43,44 @@ export function Node(value) {
 }
 
 export function prune(node) {
+  if (node == null) {
+    throw new Error('Attempt to prune null or undefined node');
+  }
+
   if (node.left != null) {
-    if (node.value === node.left.value) {
-      node.left = node.left.left;
-
-      if (node.right != null) {
-        if (node.left.right != null) {
-          throw new Error('Can\'t fuse left node when both right nodes are defined');
-        }
-      } else {
-        node.right = node.left.right;
-      }
-    }
-
     prune(node.left);
   }
 
-  if (node.right != null) {
-    if (node.value === node.right.value) {
-      node.right = node.right.right;
-
-      if (node.left != null) {
-        if (node.right.left != null) {
-          throw new Error('Can\'t fuse right node when both left nodes are defined');
+  if (node.left != null) {
+    if (node.value !== 0 && node.value === node.left.value) {
+      console.log('prune fusing left side');
+      const { left, right } = node.left;
+      node.left = left;
+      if (right != null) {
+        if (node.right != null) {
+          throw new Error('Can\'t fuse left node when both right nodes are defined');
         }
-      } else {
-        node.left = node.right.left;
+        node.right = node.left.right;
       }
     }
+  }
 
+  if (node.right != null) {
     prune(node.right);
+  }
+
+  if (node.right) {
+    if (node.value !== 0 && node.value === node.right.value) {
+      console.log('prune fusing right side');
+      const { left, right } = node.right;
+      node.right = right;
+      if (left != null) {
+        if (node.left != null) {
+          throw new Error('Can\'t fuse right node when both left nodes are defined');
+        }
+        node.left = left;
+      }
+    }
   }
 
   delete node.parent;
@@ -81,30 +89,70 @@ export function prune(node) {
 }
 
 // O(n) DFS pass to add suffix nodes to the cartesian LCP tree.
-export function addSuffixes(node, suffixArray) {
+export function addSuffixes(node, sa) {
   if (node.left != null) {
-    addSuffixes(node.left, suffixArray);
+    addSuffixes(node.left, sa);
   } else {
-    if (suffixArray.length === 0) {
+    if (sa.length === 0) {
       throw new Error(`The suffix array is empty at index ${node.value}`);
     }
 
-    node.left = suffixArray.shift();
+    node.left = sa.shift();
   }
 
   if (node.right != null) {
-    addSuffixes(node.right, suffixArray);
+    addSuffixes(node.right, sa);
   } else {
-    if (suffixArray.length === 0) {
+    if (sa.length === 0) {
       throw new Error(`The suffix array is empty at index ${node.value}`);
     }
 
-    node.right = suffixArray.shift();
+    node.right = sa.shift();
   }
+}
+
+export function printable(s, node) {
+  if (node == null) {
+    throw new Error('node is null');
+  }
+
+  const result = { value: node.value };
+
+  const leftType = typeof node.left;
+  switch (leftType) {
+    case 'number':
+      result.left = s.slice(node.left);
+      break;
+    case 'object':
+      result.left = printable(s, node.left);
+      break;
+    case 'undefined':
+      break;
+    default:
+      throw new Error(leftType);
+  }
+
+  const rightType = typeof node.right;
+  switch (rightType) {
+    case 'number':
+      result.right = s.slice(node.right); // eslint-disable-line no-console
+      break;
+    case 'object':
+      result.right = printable(s, node.right);
+      break;
+    case 'undefined':
+      break;
+    default:
+      throw new Error(rightType);
+  }
+
+  return result;
 }
 
 // O(n) cartesian tree construction
 export function createCartesianTree(sequence) {
+  console.log('createCartesianTree', sequence);
+
   const n = sequence.length;
 
   let root = new Node(sequence[0]);
@@ -135,30 +183,6 @@ export function createCartesianTree(sequence) {
   return prune(root);
 }
 
-export function print(s, node) {
-  switch (typeof node.left) {
-    case 'number':
-      console.log(s.slice(node.left));
-      break;
-    case 'object':
-      print(s, node.left);
-      break;
-    default:
-      throw new Error(typeof node.left);
-  }
-
-  switch (typeof node.right) {
-    case 'number':
-      console.log(s.slice(node.right));
-      break;
-    case 'object':
-      print(s, node.right);
-      break;
-    default:
-      throw new Error(typeof node.right);
-  }
-}
-
 /**
  * Calculates the suffix tree for the given string.
  *
@@ -182,10 +206,18 @@ export default function suffixTree(s, terminator) {
   }
 
   // O(n)
-  const sa = getSuffixArray(s, terminator);
+  const sa = suffixArray(s, terminator);
+  console.log('sa', sa);
+  for (const i of sa) {
+    console.log(s.slice(i));
+  }
 
   // O(n)
-  const lcp = getLongestCommonPrefix(s + terminator, sa);
+  const lcp = longestCommonPrefix(s + terminator, sa);
+  console.log('lcp', lcp);
+  for (const i of lcp) {
+    console.log(s.slice(i));
+  }
 
   // O(n)
   const tree = createCartesianTree(lcp);
@@ -194,10 +226,9 @@ export default function suffixTree(s, terminator) {
   addSuffixes(tree, sa);
 
   if (sa.length !== 0) {
+    console.error(sa);
     throw new Error('Left-over suffix array entries');
   }
-
-  print(s, tree);
 
   return tree;
 }
