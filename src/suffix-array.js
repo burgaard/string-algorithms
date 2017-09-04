@@ -6,6 +6,19 @@
  * http://algo2.iti.kit.edu/documents/jacm05-revised.pdf
  * http://web.stanford.edu/class/archive/cs/cs166/cs166.1146/lectures/11/Small11.pdf
  *
+ * This implementation is pure ES2015 JavaScript without any other dependencies,
+ * meaning it can be run in pretty much any JavaScript interpreter (when transpiled
+ * using e.g. babel).
+ * 
+ * Although this implementation is linear, it uses more memory and does some
+ * string and array operations that cause additional linear passes compared to
+ * more compact implementations in C and other languages.
+ * 
+ * Further, it is limited by Node.js's current string length limit (slightly less
+ * than 250 million characters), which means applications to problems like DNA
+ * sequence matching on data sets larger than about 100MB should look to other
+ * platforms than JavaScript and Node.js.
+ * 
  * Copyright (C) 2017 Kim Burgaard <kim@burgaard.us>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,62 +40,15 @@
  * SOFTWARE.
  */
 
-export function stringToSequence(s) {
-  return s.split('').map(c => c.charCodeAt(0));
-}
-
-/**
-* Radix sorts an array of arrays where all sub-array must be of the same
-* length. The sort algorithm assumes the last element in each sub-array is
-* the least significant and the first element is the most significant.
-*
-* @param {Object[]} entries an array of entries to be sorted.
-* @param {function} [getEntry] a function which is given the current entry, the
-*  current index, and entries for obtaining each subarray. If not given,
-*  entries will be assumed to contain an array of subarrays.
-*/
-export function radixSort(entries, getEntry = entry => entry) {
-  if (entries.length < 2) {
-    return entries;
-  }
-
-  const n = getEntry(entries[0], 0, entries).length;
-
-  // sort from least significan to most significant digit
-  for (let i = 0; i < n; i++) {
-    const buckets = {};
-
-    for (let j = 0; j < entries.length; j++) {
-      const e = entries[j];
-      const entry = getEntry(e, j, entries);
-      if (entry.length < n) {
-        throw new Error(`Entry is not of length ${n}: ${entry}`);
-      }
-
-      // default undefined and null to 0
-      const key = entry[entry.length - i - 1] != null ? entry[entry.length - i - 1] : 0;
-      if (key in buckets) {
-        buckets[key].push(e);
-      } else {
-        buckets[key] = [e];
-      }
-    }
-
-    entries = [];
-    for (const key in buckets) { // eslint-disable-line guard-for-in
-      entries = entries.concat(buckets[key]);
-    }
-  }
-
-  return entries;
-}
+import radixSort from './radix-sort';
+import stringToSequence from './string-sequence';
 
 function createSample(block, offset, sequence, length = 3) {
   const suffix = (block * 3) + offset;
   return [suffix, ...sequence.slice(suffix, suffix + length)]; // prefix triplet with suffix
 }
 
-export function sampleSequence(sequence, terminator) {
+function sampleSequence(sequence, terminator) {
   const n = sequence.length;
   if (n < 3) {
     throw new Error(`The sequence must contain at least 3 characters. Actual length: ${n}`);
@@ -142,7 +108,7 @@ export function sampleToString(sample) {
 }
 
 // Converts an array of samples to a sequence with each sample's rank.
-export function samplesToSequence(unsorted, sorted, rankOffset = 0x21 /* ! */) {
+function samplesToSequence(unsorted, sorted, rankOffset = 0x21 /* ! */) {
   // rank sorted samples
   const sampleToRank = {};
   let rank = rankOffset;
@@ -174,7 +140,7 @@ export function samplesToSequence(unsorted, sorted, rankOffset = 0x21 /* ! */) {
   };
 }
 
-export function rankSortedSamples(n, sortedSamples) {
+function rankSortedSamples(n, sortedSamples) {
   const r = n % 3;
   const m = n + (r !== 0 ? 3 - r : 0);
   const result = new Array(m);
@@ -195,7 +161,7 @@ export function rankSortedSamples(n, sortedSamples) {
   return result;
 }
 
-export function createNonSampledPairs(sequence, ranks) {
+function createNonSampledPairs(sequence, ranks) {
   const n = sequence.length;
 
   const nonSampledPairs = [];
@@ -209,50 +175,7 @@ export function createNonSampledPairs(sequence, ranks) {
   return nonSampledPairs;
 }
 
-/*
-function arrayToString(a) {
-  return ['[']
-    .concat(a.map(e => `  ${e},`))
-    .concat('];')
-    .join('\n');
-}
-
-function sequenceToString(sequence) {
-  return ['[']
-    .concat(sequence.map(e => `  ${e}, // ${String.fromCharCode(e)}`))
-    .concat('];')
-    .join('\n');
-}
-
-function stringIndexArrayToString(a, sequence) {
-  return ['[']
-    .concat(a.map(e => `  ${e}, // ${sequence.slice(e).map(c => String.fromCharCode(c)).join('')}`))
-    .concat('];')
-    .join('\n');
-}
-
-function indirectStringIndexArrayToString(arrayArrays, sequence) {
-  return ['[']
-    .concat(arrayArrays.map(e => (e != null
-      ? `  [${e.join(', ')}], // ${sequence.slice(e[0]).map(c => String.fromCharCode(c)).join('')}`
-      : '  undefined')))
-    .concat('];')
-    .join('\n');
-}
-*/
-
-export function merge(sequence, sortedNonSampledPairs, sortedSamples, ranks) {
-  /*
-  console.log([
-    '// merging ',
-    `const sequence = ${sequenceToString(sequence)}`,
-    `const sortedNonSampledPairs
-       = ${indirectStringIndexArrayToString(sortedNonSampledPairs, sequence)}`,
-    `const sortedSamples = ${indirectStringIndexArrayToString(sortedSamples, sequence)}`,
-    `const ranks = ${arrayToString(ranks, sequence)}`,
-  ].join('\n\n'));
-  */
-
+function merge(sequence, sortedNonSampledPairs, sortedSamples, ranks) {
   const result = [];
 
   let a = 0;
@@ -300,23 +223,17 @@ export function merge(sequence, sortedNonSampledPairs, sortedSamples, ranks) {
     result.push(sortedNonSampledPairs[a++][0]);
   }
 
-  /*
-  console.log([
-    `const result = ${stringIndexArrayToString(result, sequence)}`,
-  ].join('\n\n'));
-  */
-
   return result;
 }
 
-export function createSuffixArray(sequence, terminator) {
+function createSuffixArray(sequence, terminator) {
   const n = sequence.length;
 
   // handle trivial cases
   switch (n) {
-    case 0: return [];
-    case 1: return [0];
-    case 2: return sequence[0] < sequence[1] ? [0, 1] : [1, 0];
+    case 0: return [terminator];
+    case 1: return [0, terminator];
+    case 2: return sequence[0] < sequence[1] ? [0, 1, terminator] : [1, 0, terminator];
     default:
       sequence = [...sequence, terminator]; // add terminator to copy of sequence
       break;
@@ -329,20 +246,7 @@ export function createSuffixArray(sequence, terminator) {
   const { unique, samplesSequence, samplesTerminator }
     = samplesToSequence(sampledPositions, sortedSamples, 0x21 /* ! */);
   if (!unique) {
-    // recurse to sort the suffixes of sortedSamplesSequence
     const recursiveSuffixArray = createSuffixArray(samplesSequence, samplesTerminator);
-
-    /*
-    console.log([
-      '// recursion ',
-      `const sampledPositions = ${indirectStringIndexArrayToString(sampledPositions, sequence)}`,
-      `const sortedSamples = ${indirectStringIndexArrayToString(sortedSamples, sequence)}`,
-      `const samplesSequence = ${sequenceToString(samplesSequence)}`,
-      `const samplesTerminator = ${String.fromCharCode(samplesTerminator)}`,
-      `const recursiveSuffixArray
-        = ${stringIndexArrayToString(recursiveSuffixArray, samplesSequence)}`,
-    ].join('\n\n'));
-    */
 
     sortedSamples = recursiveSuffixArray.map(suffix => sampledPositions[suffix]);
     sortedSamples.pop(); // remove terminator
@@ -362,13 +266,16 @@ export function createSuffixArray(sequence, terminator) {
  * Calculates the suffix array for the given string and terminator character
  * (which may not be present in the input string).
  *
- * @param {string} s the string to compute the suffix array for.
- * @param {string} terminator a character not in s to use as terminator.
- * @return {string[]} a suffix array.
+ * @param {number[]|string} s the string or sequence to compute the suffix array for.
+ * @param {number|string} terminator a character not in s to use as terminator.
+ * @return {number[]} a suffix array.
  */
 export default function suffixArray(s, terminator) {
-  const sequence = stringToSequence(s);
-  const result = createSuffixArray(sequence, terminator.charCodeAt(0));
+  const sequence = Array.isArray(s) ? s : stringToSequence(s);
+  const t = typeof terminator === 'string' ? terminator.charCodeAt(0) : terminator;
+
+  const result = createSuffixArray(sequence, t);
+
   if ((sequence.length + 1) !== result.length) {
     throw new Error(`String and suffix array lengths differ ${sequence.length} + 1 != ${result.length}`);
   }

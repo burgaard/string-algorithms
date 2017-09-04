@@ -27,160 +27,172 @@
  */
 
 import suffixArray from './suffix-array';
+import stringToSequence from './string-sequence';
 import longestCommonPrefix from './longest-common-prefix';
 
-/**
- * Node instances have a value, which is the node's LCP rank and at least two
- * children which may either be other nodes or leafs that represent the start
- * index of a suffix string.
- */
-export function Node(value) {
-  this.value = value;
+const UNICODE_BPM_PRIVATE_USE_AREA_START = 0xe000;
 
-  this.parent = undefined;
-  this.left = undefined;
-  this.right = undefined;
+class Node {
+  constructor(height) {
+    this.left = undefined;
+    this.right = undefined;
+    this.parent = undefined;
+    this.height = height;
+    this.edges = [];
+  }
 }
 
-export function prune(node) {
-  if (node == null) {
-    throw new Error('Attempt to prune null or undefined node');
-  }
+// O(n) DFS pass to add suffix nodes to the cartesian LCP tree.
+function addSuffixes(node, sa, offset = 0) {
+  delete node.parent; // don't need parent anymore
+
+  let o = offset;
 
   if (node.left != null) {
-    prune(node.left);
-  }
-
-  if (node.left != null) {
-    if (node.value !== 0 && node.value === node.left.value) {
-      console.log('prune fusing left side');
-      const { left, right } = node.left;
-      node.left = left;
-      if (right != null) {
-        if (node.right != null) {
-          throw new Error('Can\'t fuse left node when both right nodes are defined');
-        }
-        node.right = node.left.right;
-      }
-    }
+    o = addSuffixes(node.left, sa, o);
+  } else {
+    node.edges.push(sa[o++]);
   }
 
   if (node.right != null) {
-    prune(node.right);
+    o = addSuffixes(node.right, sa, o);
+  } else {
+    node.edges.push(sa[o++]);
   }
 
-  if (node.right) {
-    if (node.value !== 0 && node.value === node.right.value) {
-      console.log('prune fusing right side');
-      const { left, right } = node.right;
-      node.right = right;
-      if (left != null) {
-        if (node.left != null) {
-          throw new Error('Can\'t fuse right node when both left nodes are defined');
-        }
-        node.left = left;
-      }
+  return o;
+}
+
+function mergeNodes(node) {
+  if (node.left != null) {
+    mergeNodes(node.left);
+  }
+
+  if (node.right != null) {
+    mergeNodes(node.right);
+
+    const right = node.right;
+    if (right.height !== node.height) {
+      return node;
+    }
+
+    if (right.left != null && node.left != null) {
+      return node;
+    }
+
+    // merge the right node into this node
+    node.edges.push(...right.edges);
+
+    node.right = right.right;
+    if (node.left == null) {
+      node.left = right.left;
     }
   }
-
-  delete node.parent;
 
   return node;
 }
 
-// O(n) DFS pass to add suffix nodes to the cartesian LCP tree.
-export function addSuffixes(node, sa) {
-  if (node.left != null) {
-    addSuffixes(node.left, sa);
-  } else {
-    if (sa.length === 0) {
-      throw new Error(`The suffix array is empty at index ${node.value}`);
-    }
-
-    node.left = sa.shift();
-  }
-
-  if (node.right != null) {
-    addSuffixes(node.right, sa);
-  } else {
-    if (sa.length === 0) {
-      throw new Error(`The suffix array is empty at index ${node.value}`);
-    }
-
-    node.right = sa.shift();
-  }
-}
-
-export function printable(s, node) {
-  if (node == null) {
-    throw new Error('node is null');
-  }
-
-  const result = { value: node.value };
-
-  const leftType = typeof node.left;
-  switch (leftType) {
-    case 'number':
-      result.left = s.slice(node.left);
-      break;
-    case 'object':
-      result.left = printable(s, node.left);
-      break;
-    case 'undefined':
-      break;
-    default:
-      throw new Error(leftType);
-  }
-
-  const rightType = typeof node.right;
-  switch (rightType) {
-    case 'number':
-      result.right = s.slice(node.right); // eslint-disable-line no-console
-      break;
-    case 'object':
-      result.right = printable(s, node.right);
-      break;
-    case 'undefined':
-      break;
-    default:
-      throw new Error(rightType);
-  }
-
-  return result;
-}
-
 // O(n) cartesian tree construction
-export function createCartesianTree(sequence) {
-  console.log('createCartesianTree', sequence);
-
+function createCartesianTree(sequence) {
   const n = sequence.length;
 
   let root = new Node(sequence[0]);
-
   let last = root;
-  for (let i = 1; i < n; i++) {
-    const node = new Node(sequence[i]);
 
-    while (last.value > sequence[i] && last !== root) {
+  for (let i = 1; i < n; i++) {
+    const height = sequence[i];
+
+    while (last !== root && height < last.height) {
+      // traverse up the tree
       last = last.parent;
     }
 
-    if (last.value > sequence[i]) {
+    const node = new Node(height);
+
+    if (height < last.height) {
+      // we have a new root
       root.parent = node;
       node.left = root;
       root = node;
     } else if (last.right == null) {
+      // add node to last node's right edge
       last.right = node;
       node.parent = last;
     } else {
+      // insert node to last node's right edge
       last.right.parent = node;
       node.left = last.right;
       last.right = node;
       node.parent = last;
     }
+    last = node;
   }
 
-  return prune(root);
+  return root;
+}
+
+function createSuffixTree(s, terminator) {
+  // O(n)
+  const sequence = stringToSequence(s);
+
+  // O(n)
+  const sa = suffixArray(sequence, terminator);
+
+  // O(n)
+  const lcp = longestCommonPrefix(sequence.concat(terminator), sa);
+
+  // O(n)
+  const tree = createCartesianTree(lcp);
+
+  // O(n)
+  const offset = addSuffixes(tree, sa);
+
+  if (offset !== sa.length) {
+    throw new Error(`Offset ${offset} does not match suffix array length ${sa.length}`);
+  }
+
+  return mergeNodes(tree);
+}
+
+/**
+ * Converts a suffix three to a string representation.
+ * @param {Node} node a suffix tree node.
+ * @param {string} s the string the suffix tree is based on.
+ * @param {number} [indent] an optional indentation level.
+ * @return a string.
+ */
+export function suffixTreeToString(node, s, indent = 0) {
+  if (!(node instanceof Node)) {
+    throw new TypeError(`node is not an instance of Node: ${typeof node}`);
+  }
+
+  if (typeof s !== 'string') {
+    throw new TypeError(`s is not a string: ${typeof s}`);
+  }
+
+  if (indent != null && typeof indent !== 'number') {
+    throw new TypeError(`indent is not a number: ${typeof s}`);
+  }
+
+  const baseIndentation = ' '.repeat(indent);
+  const result = [
+    '{',
+  ];
+
+  result.push(`${baseIndentation}  height: ${node.height},`);
+  result.push(`${baseIndentation}  edges: [${node.edges.join(', ')}], // ${node.edges.map(i => s.slice(i)).join(', ')}`);
+
+  if (node.left != null) {
+    result.push(`${baseIndentation}  left: ${suffixTreeToString(node.left, s, indent + 2)},`);
+  }
+
+  if (node.right != null) {
+    result.push(`${baseIndentation}  right: ${suffixTreeToString(node.right, s, indent + 2)},`);
+  }
+
+  result.push(`${baseIndentation}}`);
+
+  return result.join('\n');
 }
 
 /**
@@ -192,43 +204,21 @@ export function createCartesianTree(sequence) {
  *    private use area will be used.
  */
 export default function suffixTree(s, terminator) {
+  let t;
   if (terminator != null) {
     if (terminator.length !== 1) {
       throw new Error('The terminator argument must be exactly one character');
     }
-
-    // O(n)
-    if (s.indexOf(terminator) !== -1) {
-      throw new Error('The terminator argument must not be a member of s');
-    }
+    t = terminator.charCodeAt(0);
   } else {
-    throw new Error('TODO');
+    t = UNICODE_BPM_PRIVATE_USE_AREA_START;
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charCodeAt(i);
+      if (c >= t) {
+        t = c + 1;
+      }
+    }
   }
 
-  // O(n)
-  const sa = suffixArray(s, terminator);
-  console.log('sa', sa);
-  for (const i of sa) {
-    console.log(s.slice(i));
-  }
-
-  // O(n)
-  const lcp = longestCommonPrefix(s + terminator, sa);
-  console.log('lcp', lcp);
-  for (const i of lcp) {
-    console.log(s.slice(i));
-  }
-
-  // O(n)
-  const tree = createCartesianTree(lcp);
-
-  // O(n)
-  addSuffixes(tree, sa);
-
-  if (sa.length !== 0) {
-    console.error(sa);
-    throw new Error('Left-over suffix array entries');
-  }
-
-  return tree;
+  return createSuffixTree(s, String.fromCharCode(t));
 }

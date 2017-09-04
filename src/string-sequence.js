@@ -1,4 +1,6 @@
 /**
+ * Convert a UTF-26 string into an array of character codes.
+ * 
  * Copyright (C) 2017 Kim Burgaard <kim@burgaard.us>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,22 +22,15 @@
  * SOFTWARE.
  */
 
-import longestCommonPrefix from './longest-common-prefix';
+/**
+ * Converts a string into an array of its corresponding 16-bit character codes.
+ * @param {string} s the string to be converted.
+ * @return {number[]} an array of 16-bit character codes
+ */
+export default function stringToSequence(s) {
+  if (typeof s !== 'string') {
+    throw new Error(`Expected a string but got ${typeof s}`);
+  }
 
-describe('longest-common-prefix', () => {
-  test('computes the longest common prefix from a sequence and its suffix arrray', () => {
-    const sequence = [109, 111, 110, 115, 111, 111, 110, 110, 111, 109, 110, 111, 109, 115, 36];
-    const suffixArray = [14, 9, 0, 12, 6, 7, 10, 2, 8, 11, 5, 1, 4, 13, 3];
-
-    const result = longestCommonPrefix(sequence, suffixArray);
-
-    expect(result).toEqual([0, 1, 1, 0, 1, 3, 1, 0, 2, 1, 2, 1, 0, 1]);
-  });
-
-  test('throws an error when sequence and suffix array are not the same length', () => {
-    const sequence = [1, 2];
-    const suffixArray = [1, 2, 3];
-
-    expect(() => longestCommonPrefix(sequence, suffixArray)).toThrow();
-  });
-});
+  return s.split('').map(c => c.charCodeAt(0));
+}

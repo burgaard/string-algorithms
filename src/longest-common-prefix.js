@@ -30,7 +30,7 @@
  *
  * @param {string[]} a sequence of character codes
  * @param {number[]} the corresponding suffix array.
- * @return number[] a longet common prefix array.
+ * @return number[] a longest common prefix array.
  */
 export default function longestCommonPrefix(sequence, suffixArray) {
   const n = sequence.length;
@@ -48,17 +48,18 @@ export default function longestCommonPrefix(sequence, suffixArray) {
   let h = 0;
 
   for (let i = 0; i < n; i++) {
-    if (rank[i] > 0) {
-      const j = suffixArray[rank[i] - 1];
+    const r = rank[i];
+    if (r > 0) {
+      const j = suffixArray[r - 1];
       while (sequence[i + h] === sequence[j + h]) {
         h++;
       }
-      lcp[rank[i]] = h;
+      lcp[r] = h;
       if (h > 0) {
         h--;
       }
     }
   }
 
-  return lcp;
+  return lcp.slice(1);
 }
