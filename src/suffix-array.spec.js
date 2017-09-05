@@ -25,7 +25,7 @@ import stringToSequence from './string-sequence';
 
 function expectStringOrder(a, b) {
   let [i, j] = [0, 0];
-  while (i < a.length && j < b.length && a.charCodeAt(i) === b.charCodeAt(j)) {
+  while (i < a.length && j < b.length && a[i] === b[j]) {
     i++;
     j++;
   }
@@ -35,8 +35,7 @@ function expectStringOrder(a, b) {
   // eslint-disable-next-line default-case
   switch ((i === a.length ? 1 : 0) + (j === b.length ? 2 : 0)) {
     case 0:
-      // a[i] !== b[j]
-      result = a.charCodeAt(i) - b.charCodeAt(j);
+      result = a[i] - b[j];
       break;
     case 1:
       // b is a substring of a
@@ -52,7 +51,7 @@ function expectStringOrder(a, b) {
 
   if (result > 0) {
     // eslint-disable-next-line no-console
-    throw new Error(`Expected a to compare less than or equal to b:\n    a: ${a}\n    b: ${b}'`);
+    throw new Error(`Expected a to compare less than or equal to b:\n    a: ${a}\n    b: ${b}`);
   }
 }
 
@@ -119,9 +118,39 @@ describe('suffix-array', () => {
     });
 
     test('handles the empty string', () => {
-      const result = suffixArray([], '$');
+      const result = suffixArray('', '$');
 
-      expectSuffixArray([], '$', result);
+      expectSuffixArray('', '$', result);
+    });
+
+    test('handles a one character string', () => {
+      const result = suffixArray('1', 'x');
+
+      expectSuffixArray('1', 'x', result);
+    });
+
+    test('handles a two character string where the first character is less than the second', () => {
+      const result = suffixArray('12', 'x');
+
+      expectSuffixArray('12', 'x', result);
+    });
+
+    test('handles a two character string where the second character is less than the first', () => {
+      const result = suffixArray('21', 'x');
+
+      expectSuffixArray('21', 'x', result);
+    });
+
+    test('handles array input', () => {
+      const result = suffixArray('mississippi'.split('').map(c => c.charCodeAt(0)), 'x');
+
+      expectSuffixArray('mississippi', 'x', result);
+    });
+
+    test('handles integer terminator input', () => {
+      const result = suffixArray('mississippi', 0xe000);
+
+      expectSuffixArray('mississippi', 0xe000, result);
     });
   });
 });

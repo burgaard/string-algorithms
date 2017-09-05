@@ -19,6 +19,9 @@
  * sequence matching on data sets larger than about 100MB should look to other
  * platforms than JavaScript and Node.js.
  * 
+ * On the other hand, this implememtation supports UTF-16 while the reference DC3
+ * implementation expects a byte sized alphabet.
+ * 
  * Copyright (C) 2017 Kim Burgaard <kim@burgaard.us>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -231,9 +234,9 @@ function createSuffixArray(sequence, terminator) {
 
   // handle trivial cases
   switch (n) {
-    case 0: return [terminator];
-    case 1: return [0, terminator];
-    case 2: return sequence[0] < sequence[1] ? [0, 1, terminator] : [1, 0, terminator];
+    case 0: return [0];
+    case 1: return [0, 1];
+    case 2: return sequence[0] < sequence[1] ? [0, 1, 2] : [1, 0, 2];
     default:
       sequence = [...sequence, terminator]; // add terminator to copy of sequence
       break;
