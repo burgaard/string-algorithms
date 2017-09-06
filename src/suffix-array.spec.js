@@ -83,74 +83,72 @@ function expectSuffixArray(s, terminator, sa) {
   }
 }
 
-describe('suffix-array', () => {
-  describe('suffixArray', () => {
-    test('returns the suffix array corresponding to the given string', () => {
-      const s = 'monsoonnomnoms';
+describe('suffixArray', () => {
+  test('returns the suffix array corresponding to the given string', () => {
+    const s = 'monsoonnomnoms';
 
-      const result = suffixArray(s, '$');
+    const result = suffixArray(s, '$');
 
-      expectSuffixArray(s, '$', result);
-    });
+    expectSuffixArray(s, '$', result);
+  });
 
-    test('handles long strings', () => {
-      const sequence = ' 1 2 apple 3 4~4 5 apple 6 7!8 9 apple 1 2@apple 3 4#5 6 apple$apple%'.split('').map(c => c.charCodeAt(0));
+  test('handles a string with repetitive sections', () => {
+    const s = ' 1 2 apple 3 4~4 5 apple 6 7!8 9 apple 1 2@apple 3 4#5 6 apple$apple%'.split('').map(c => c.charCodeAt(0));
 
-      const result = suffixArray(sequence, '^');
+    const result = suffixArray(s, '^');
 
-      expectSuffixArray(sequence, '^', result);
-    });
+    expectSuffixArray(s, '^', result);
+  });
 
-    test('handles recursion', () => {
-      const sequence = 'abc3abc2abc1'.split('').map(c => c.charCodeAt(0));
+  test('handles recursion', () => {
+    const sequence = 'abc3abc2abc1'.split('').map(c => c.charCodeAt(0));
 
-      const result = suffixArray(sequence, '$');
+    const result = suffixArray(sequence, '$');
 
-      expectSuffixArray(sequence, '$', result);
-    });
+    expectSuffixArray(sequence, '$', result);
+  });
 
-    test('handles no recursion', () => {
-      const sequence = 'abcdefghijklmnopqrstuvwxyz'.split('').map(c => c.charCodeAt(0));
+  test('handles no recursion', () => {
+    const sequence = 'abcdefghijklmnopqrstuvwxyz'.split('').map(c => c.charCodeAt(0));
 
-      const result = suffixArray(sequence, '$');
+    const result = suffixArray(sequence, '$');
 
-      expectSuffixArray(sequence, '$', result);
-    });
+    expectSuffixArray(sequence, '$', result);
+  });
 
-    test('handles the empty string', () => {
-      const result = suffixArray('', '$');
+  test('handles the empty string', () => {
+    const result = suffixArray('', '$');
 
-      expectSuffixArray('', '$', result);
-    });
+    expectSuffixArray('', '$', result);
+  });
 
-    test('handles a one character string', () => {
-      const result = suffixArray('1', 'x');
+  test('handles a one character string', () => {
+    const result = suffixArray('1', 'x');
 
-      expectSuffixArray('1', 'x', result);
-    });
+    expectSuffixArray('1', 'x', result);
+  });
 
-    test('handles a two character string where the first character is less than the second', () => {
-      const result = suffixArray('12', 'x');
+  test('handles a two character string where the first character is less than the second', () => {
+    const result = suffixArray('12', 'x');
 
-      expectSuffixArray('12', 'x', result);
-    });
+    expectSuffixArray('12', 'x', result);
+  });
 
-    test('handles a two character string where the second character is less than the first', () => {
-      const result = suffixArray('21', 'x');
+  test('handles a two character string where the second character is less than the first', () => {
+    const result = suffixArray('21', 'x');
 
-      expectSuffixArray('21', 'x', result);
-    });
+    expectSuffixArray('21', 'x', result);
+  });
 
-    test('handles array input', () => {
-      const result = suffixArray('mississippi'.split('').map(c => c.charCodeAt(0)), 'x');
+  test('handles array input', () => {
+    const result = suffixArray('mississippi'.split('').map(c => c.charCodeAt(0)), 'x');
 
-      expectSuffixArray('mississippi', 'x', result);
-    });
+    expectSuffixArray('mississippi', 'x', result);
+  });
 
-    test('handles integer terminator input', () => {
-      const result = suffixArray('mississippi', 0xe000);
+  test('handles integer terminator input', () => {
+    const result = suffixArray('mississippi', 0xe000);
 
-      expectSuffixArray('mississippi', 0xe000, result);
-    });
+    expectSuffixArray('mississippi', 0xe000, result);
   });
 });
