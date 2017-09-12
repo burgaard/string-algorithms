@@ -1,5 +1,7 @@
 /**
- * TBD
+ * Linear time implementations of Radix sorting, suffix array calculation,
+ * longest common substring calculation, suffix tree calculation and longest
+ * common substring (of multiple strings).
  *
  * Copyright (C) 2017 Kim Burgaard <kim@burgaard.us>
  *
@@ -21,3 +23,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+import radixSort from './radix-sort';
+import suffixArray from './suffix-array';
+import longestCommonPrefix from './longest-common-prefix';
+import suffixTree from './suffix-tree';
+import longestCommonSubstring from './longest-common-substring';
+
+export {
+  radixSort,
+  suffixArray,
+  longestCommonPrefix,
+  suffixTree,
+  longestCommonSubstring,
+};
