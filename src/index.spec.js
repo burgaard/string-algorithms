@@ -1,8 +1,4 @@
 /**
- * Linear time implementations of Radix sorting, suffix array calculation,
- * longest common substring calculation, suffix tree calculation and longest
- * common substring (of multiple strings).
- *
  * Copyright (C) 2017 Kim Burgaard <kim@burgaard.us>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,14 +20,32 @@
  * SOFTWARE.
  */
 
-import radixSort from './radix-sort';
-import suffixArray from './suffix-array';
-import longestCommonPrefix from './longest-common-prefix';
-import multipleLongestCommonSubstring from './multiple-longest-common-substring';
-
-export {
+import {
   radixSort,
   suffixArray,
   longestCommonPrefix,
   multipleLongestCommonSubstring,
-};
+} from './index';
+
+import radixSortOrig from './radix-sort';
+import suffixArrayOrig from './suffix-array';
+import longestCommonPrefixOrig from './longest-common-prefix';
+import multipleLongestCommonSubstringOrig from './multiple-longest-common-substring';
+
+describe('exports', () => {
+  it('exports radixSort', () => {
+    expect(radixSort).toBe(radixSortOrig);
+  });
+
+  it('exports suffixArray', () => {
+    expect(suffixArray).toBe(suffixArrayOrig);
+  });
+
+  it('exports longestCommonPrefix', () => {
+    expect(longestCommonPrefix).toBe(longestCommonPrefixOrig);
+  });
+
+  it('exports multipleLongestCommonSubstring', () => {
+    expect(multipleLongestCommonSubstring).toBe(multipleLongestCommonSubstringOrig);
+  });
+});

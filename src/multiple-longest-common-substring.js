@@ -31,14 +31,21 @@ import longestCommonPrefix from './longest-common-prefix';
  * Concrete implementations provide different compromises between O(1) and
  * O(log(K)) lookup times versus O(n) and O(k) space requirements.
  */
-class StringIndexMap {
+export class StringIndexMap {
   /**
    * Initializes a new string index map.
    * @param {number} k the number of expected strings.
    */
   constructor(k = 0) {
+    if (typeof k !== 'number') {
+      throw TypeError(`k is not an integer: ${typeof k}`);
+    }
+    if (k < 0) {
+      throw Error('k may not be negative');
+    }
     this.add = this.add.bind(this);
     this.lookup = this.lookup.bind(this);
+    this.toString = this.toString.bind(this);
     this.ranges = new Array(k);
     this.k = 0;
     this.n = 0;
@@ -62,6 +69,14 @@ class StringIndexMap {
   lookup() {
     throw new Error('not implemented');
   }
+
+  /**
+   * Returns a string representation of the string index map.
+   * @return {string} a string representation.
+   */
+  toString() {
+    throw new Error('not implemented');
+  }
   /* eslint-enable class-methods-use-this */
 }
 
@@ -70,16 +85,19 @@ class StringIndexMap {
  * O(log(K)) substring lookup in O(K) space. This implementation is preferable for small K and/or
  * very large n.
  */
-class LogStringIndexMap extends StringIndexMap {
+export class LogStringIndexMap extends StringIndexMap {
   /**
    * Adds a substring with the given length. O(1)
    * @param {number} length the length of the substring.
    * @return {number} the current total length of all substrings.
    */
   add(length) {
+    if (length < 1) {
+      throw Error(`the length must be a number greater than 0: ${length}`);
+    }
     const m = this.n + length;
     const k = this.k;
-    this.ranges[this.k++] = [this.n, m, k];
+    this.ranges[this.k++] = [k, this.n];
     return this.n = m;
   }
 
@@ -101,18 +119,15 @@ class LogStringIndexMap extends StringIndexMap {
     const e = end || this.ranges.length;
     const n = e - s;
     if (n === 1) {
-      const [ss, se, i] = this.ranges[s];
-      if (suffix < ss) {
-        throw new Error(`suffix ${suffix} is less than the range entry start ${ss}`);
-      }
-      if (suffix > se) {
-        throw new Error(`suffix ${suffix} is less than the range entry start ${se}`);
-      }
-      return i;
+      return this.ranges[s][0];
     }
 
     const m = s + (n >>> 1); // eslint-disable-line no-bitwise
-    return suffix < this.ranges[m][0] ? this.lookup(suffix, s, m) : this.lookup(suffix, m, e);
+    return suffix < this.ranges[m][1] ? this.lookup(suffix, s, m) : this.lookup(suffix, m, e);
+  }
+
+  toString() {
+    return `[${this.ranges.map(r => `[${r.join(', ')}]`).join(', ')}]`;
   }
 }
 
@@ -121,7 +136,7 @@ class LogStringIndexMap extends StringIndexMap {
  * log(1) substring lookup in O(n) space. This implementation is preferable for very large K and/or
  * small n.
  */
-class LinearStringIndexMap extends StringIndexMap {
+export class LinearStringIndexMap extends StringIndexMap {
   constructor() {
     super();
     this.initialize = this.initialize.bind(this);
@@ -134,6 +149,9 @@ class LinearStringIndexMap extends StringIndexMap {
    * @return {number} the current total length of all substrings.
    */
   add(length) {
+    if (length < 1) {
+      throw Error(`the length must be a number greater than 0: ${length}`);
+    }
     this.initialized = false;
     this.ranges[this.k++] = length;
     return this.n += length;
@@ -171,16 +189,30 @@ class LinearStringIndexMap extends StringIndexMap {
 
     return this.indexMap[suffix];
   }
+
+  toString() {
+    this.initialize();
+
+    return `{\n  ranges: [${this.ranges.join(', ')}],\n  indexMap: [${this.indexMap.join(', ')}]\n}`;
+  }
 }
 
-function createStringIndexMap(strategy, k) {
-  switch (strategy) {
+function createStringIndexMap(indexMap, k) {
+  if (indexMap instanceof StringIndexMap) {
+    return indexMap;
+  }
+
+  if (typeof indexMap !== 'string') {
+    throw new TypeError(`the index map argument must be a string or a StringIndexMap instance: ${typeof indexMap}`);
+  }
+
+  switch (indexMap) {
     case 'log':
       return new LogStringIndexMap(k);
     case 'linear':
       return new LinearStringIndexMap(k);
     default:
-      throw new Error(`strategy must be either 'log' or 'linear': ${strategy}`);
+      throw new Error(`strategy must be either 'log' or 'linear': ${indexMap}`);
   }
 }
 
@@ -194,19 +226,17 @@ function ensureNonEmptyString(e) {
 }
 
 /**
- * Finds the longest common substring(s) in the given strings. If there are multiple
- * substrings that all share the longest length, then all such substrings are
- * returned. O(n) or O(n * log(K)) depending on the selected string indexing strategy.
- * 
- * Note: While this implementation works with 16-bit Unicode characters, none of the
- * input strings may contain characters in the Unicode Private character area.
+ * Finds the longest common substring(s) in the set of given strings. If there
+ * are multiple substrings that all share the longest length, then all such
+ * substrings are returned. O(n) or O(n * log(K)) depending on the selected
+ * string indexing strategy.
  * 
  * @param {string[]} strings an array of strings.
- * @param {string} [strategy='log'] string indexing strategy. If given, it must be one of
- * 'log' or 'linear'.
+ * @param {string|StringIndexMap} [indexMap='log'] string indexing map. If
+ *   given a string, it must be one of 'log' or 'linear'.
  * @return {string|string[]} the longest common substring(s).
  */
-export default function longestCommonSubstring(strings, strategy = 'log') {
+export default function multipleLongestCommonSubstring(strings, indexMap = 'log') {
   if (!Array.isArray(strings)) {
     throw new TypeError('strings argument must be an array of strings');
   }
@@ -223,7 +253,7 @@ export default function longestCommonSubstring(strings, strategy = 'log') {
       break;
   }
 
-  const stringIndexMap = createStringIndexMap(strategy, k);
+  const stringIndexMap = createStringIndexMap(indexMap, k);
 
   // append each string as an array of unicodes + unique terminator
   // O(n)
@@ -244,11 +274,10 @@ export default function longestCommonSubstring(strings, strategy = 'log') {
   let longest = 1;
 
   let i = 0;
-  while (i < sa.length) {
+  while (i < sa.length - 1) {
     const h = lcp[i];
     if (h >= longest) {
       const index = sa[i];
-
       const entries = {
         [stringIndexMap.lookup(sa[i])]: true,
         [stringIndexMap.lookup(sa[i + 1])]: true,
@@ -269,13 +298,11 @@ export default function longestCommonSubstring(strings, strategy = 'log') {
         }
       }
 
-      i = j;
+      i = j - 1;
     } else {
       i++;
     }
   }
-
-  console.log(result);
 
   return result.map(r => sequence.slice(r[0], r[0] + r[1]).map(c => String.fromCharCode(c)).join(''));
 }

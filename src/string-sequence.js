@@ -29,7 +29,7 @@
  */
 export default function stringToSequence(s) {
   if (typeof s !== 'string') {
-    throw new Error(`Expected a string but got ${typeof s}`);
+    throw Error(`Expected a string but got ${typeof s}`);
   }
 
   return s.split('').map(c => c.charCodeAt(0));

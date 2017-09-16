@@ -1,4 +1,4 @@
-/**
+/*
  * Linear-time suffix array implementation using the DC3/skew (Difference Cover
  * modulo 3) algorithm.
  *
@@ -53,10 +53,6 @@ function createSample(block, offset, sequence, length = 3) {
 
 function sampleSequence(sequence, terminator) {
   const n = sequence.length;
-  if (n < 3) {
-    throw new Error(`The sequence must contain at least 3 characters. Actual length: ${n}`);
-  }
-
   const remainder = n % 3;
   const blocks = (n - remainder) / 3;
 
@@ -75,6 +71,7 @@ function sampleSequence(sequence, terminator) {
 
   i++;
 
+  /* eslint-disable default-case */
   switch (remainder) {
     case 2:
       lastB1.push(sequence[i * 3]);
@@ -88,9 +85,10 @@ function sampleSequence(sequence, terminator) {
       break;
     case 0:
       break;
-    default:
-      throw new Error(`Impossible remainder: ${remainder}`);
+    // default:
+    //   throw Error(`Impossible remainder: ${remainder}`);
   }
+  /* eslint-enable default-case */
 
   while (lastB1.length % 4 !== 0) {
     lastB1.push(terminator);
@@ -111,10 +109,10 @@ export function sampleToString(sample) {
 }
 
 // Converts an array of samples to a sequence with each sample's rank.
-function samplesToSequence(unsorted, sorted, rankOffset = 0x21 /* ! */) {
+function samplesToSequence(unsorted, sorted) {
   // rank sorted samples
   const sampleToRank = {};
-  let rank = rankOffset;
+  let rank = 0x21; // !
   let unique = true;
   for (const sample of sorted) {
     const sampleString = sampleToString(sample.slice(1));
@@ -143,7 +141,7 @@ function rankSortedSamples(n, sortedSamples) {
   const result = new Array(m);
 
   let rank = 1;
-  sortedSamples.forEach(sample => (sample !== undefined ? result[sample[0]] = rank++ : 0));
+  sortedSamples.forEach(sample => result[sample[0]] = rank++);
 
   switch (r) {
     default:
@@ -180,11 +178,12 @@ function merge(sequence, sortedNonSampledPairs, sortedSamples, ranks) {
   while (a < sortedNonSampledPairs.length && b < sortedSamples.length) {
     const i = sortedSamples[b][0];
     const j = sortedNonSampledPairs[a][0];
-    if (j % 3 !== 0) {
-      throw new Error('Sorted non-samples should only contain offset 0 (mod 3) entries');
-    }
+    // if (j % 3 !== 0) {
+    //   throw new Error('Sorted non-samples should only contain offset 0 (mod 3) entries');
+    // }
 
     let d = sequence[i] - sequence[j];
+    /* eslint-disable default-case */
     switch (i % 3) {
       case 1:
         if (d === 0) {
@@ -199,9 +198,10 @@ function merge(sequence, sortedNonSampledPairs, sortedSamples, ranks) {
           }
         }
         break;
-      default:
-        throw new Error('Sorted samples should only contain offset != 0 (mod 3) entries');
+      // default:
+      //   throw new Error('Sorted samples should only contain offset != 0 (mod 3) entries');
     }
+    /* eslint-enable default-case */
 
     if (d <= 0) {
       result.push(i);
@@ -240,15 +240,11 @@ function createSuffixArray(sequence, terminator) {
   const sampledPositions = sampleSequence(sequence, terminator);
 
   let sortedSamples = radixSort(sampledPositions, entry => entry.slice(1));
-  const { unique, samplesSequence }
-    = samplesToSequence(sampledPositions, sortedSamples, 0x21 /* ! */);
+  const { unique, samplesSequence } = samplesToSequence(sampledPositions, sortedSamples);
   if (!unique) {
     const recursiveSuffixArray = createSuffixArray(samplesSequence, -1);
 
     sortedSamples = recursiveSuffixArray.map(suffix => sampledPositions[suffix]);
-    if (sortedSamples[0] != null) {
-      throw new Error('First entry is not the terminator');
-    }
     sortedSamples = sortedSamples.slice(1);
   }
 
@@ -273,17 +269,13 @@ export default function suffixArray(s, terminator = -1) {
   const sequence = Array.isArray(s) ? s : stringToSequence(s);
   const t = terminator != null ? terminator : -1;
   if (typeof t !== 'number') {
-    throw new TypeError(`the terminator argument is not a number: ${typeof terminator}`);
+    throw TypeError(`the terminator argument is not a number: ${typeof terminator}`);
   }
   if (t > -1) {
-    throw new Error(`the terminator is not a negative integer: ${terminator}`);
+    throw Error(`the terminator is not a negative integer: ${terminator}`);
   }
 
   const result = createSuffixArray(sequence, t);
-
-  if ((sequence.length + 1) !== result.length) {
-    throw new Error(`String and suffix array lengths differ ${sequence.length} + 1 != ${result.length}`);
-  }
 
   return result;
 }

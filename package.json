@@ -23,7 +23,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint src/**/*.js",
-    "test": "jest",
+    "test": "jest --coverage",
     "test-debug": "BABEL_ENV=dev node --inspect ./node_modules/.bin/jest --runInBand",
     "build": "eslint src/**/*.js && jest && babel src --out-dir lib --ignore spec.js"
   },
@@ -43,6 +43,15 @@
     "testPathIgnorePatterns": [
       "node_modules",
       "lib"
+    ],
+    "collectCoverageFrom": [
+      "**/*.{js,jsx}",
+      "!**/lib/**",
+      "!**/node_modules/**",
+      "!**/vendor/**"
+    ],
+    "coverageReporters": [
+      "text"
     ]
   }
 }

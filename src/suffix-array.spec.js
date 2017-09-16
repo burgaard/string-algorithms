@@ -153,6 +153,18 @@ describe('suffixArray', () => {
     expectSuffixArray('mississippi', -2, result);
   });
 
+  test('handles a null terminator', () => {
+    const result = suffixArray('mississippi', null);
+
+    expectSuffixArray('mississippi', -1, result);
+  });
+
+  test('handles an undefined terminator', () => {
+    const result = suffixArray('mississippi', undefined);
+
+    expectSuffixArray('mississippi', -1, result);
+  });
+
   test('handles invalid terminator terminator input', () => {
     expect(() => suffixArray('mississippi', 0)).toThrow();
     expect(() => suffixArray('mississippi', 1)).toThrow();

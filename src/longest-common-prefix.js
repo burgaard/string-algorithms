@@ -35,7 +35,7 @@
 export default function longestCommonPrefix(sequence, suffixArray) {
   const n = sequence.length;
   if (n !== suffixArray.length) {
-    throw new Error(`The sequence and suffix array lengths don't match: ${n} != ${suffixArray.length}`);
+    throw Error(`The sequence and suffix array lengths don't match: ${n} != ${suffixArray.length}`);
   }
 
   const rank = [];
