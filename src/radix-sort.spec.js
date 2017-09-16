@@ -35,6 +35,28 @@ describe('radixSort', () => {
     ]);
   });
 
+  test('handles negative entries', () => {
+    const input = [
+      [-9, 4, 0],
+      [4, -2, 3],
+      [4, 2, -1],
+      [1, 0, 6],
+      [-4, -2, -5],
+      [4, 6, 8],
+    ];
+
+    const result = radixSort(input);
+
+    expect(result).toEqual([
+      [-9, 4, 0],
+      [-4, -2, -5],
+      [1, 0, 6],
+      [4, -2, 3],
+      [4, 2, -1],
+      [4, 6, 8],
+    ]);
+  });
+
   test('uses the given function to compute each subarray', () => {
     const input = [
       { a: 1, b: [9, 4, 0] },

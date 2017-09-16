@@ -3,6 +3,9 @@
   "env": {
     "dev": {
       "sourceMaps": "both"
+    },
+    "test": {
+      "sourceMaps": "both"
     }
   }
 }

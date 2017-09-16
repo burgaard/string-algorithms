@@ -227,11 +227,11 @@ export default function longestCommonSubstring(strings, strategy = 'log') {
 
   // append each string as an array of unicodes + unique terminator
   // O(n)
-  let terminator = 0xe000;
+  let terminator = -1;
   const sequence = strings.reduce((a, e) => {
     ensureNonEmptyString(e);
     stringIndexMap.add(e.length + 1);
-    return a.concat(e.split('').map(c => c.charCodeAt(0)).concat(terminator++));
+    return a.concat(e.split('').map(c => c.charCodeAt(0)).concat(terminator--));
   }, []);
 
   // calculate the suffix array in O(n)
@@ -274,6 +274,8 @@ export default function longestCommonSubstring(strings, strategy = 'log') {
       i++;
     }
   }
+
+  console.log(result);
 
   return result.map(r => sequence.slice(r[0], r[0] + r[1]).map(c => String.fromCharCode(c)).join(''));
 }

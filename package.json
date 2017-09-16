@@ -1,7 +1,7 @@
 {
-  "name": "multiple-longest-common-substring",
-  "version": "0.0.1",
-  "description": "Linear-time Multiple Longest Common Substring (MLCS).",
+  "name": "string-algorithms",
+  "version": "1.0.0",
+  "description": "Linear-time Multiple Longest Common Substring.",
   "author": "Kim Burgaard <kim@burgaard.us> (http://www.burgaard.us)",
   "license": "MIT",
   "keywords": [
@@ -11,18 +11,10 @@
     "tree",
     "longest",
     "common",
-    "subsequence",
+    "substring",
     "longest",
     "common",
-    "subtree",
-    "longest",
-    "common",
-    "palindrome",
-    "lcs",
     "lcp",
-    "burrows-wheeler",
-    "transform",
-    "bwt",
     "linear",
     "time",
     "o(n)",
@@ -46,5 +38,11 @@
     "eslint-plugin-jest": "20.0.3",
     "jest": "20.0.4"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "jest": {
+    "testPathIgnorePatterns": [
+      "node_modules",
+      "lib"
+    ]
+  }
 }

@@ -25,28 +25,29 @@ import stringToSequence from './string-sequence';
 
 function expectStringOrder(a, b) {
   let [i, j] = [0, 0];
-  while (i < a.length && j < b.length && a[i] === b[j]) {
+  const na = a.length - 1;
+  const nb = b.length - 1;
+  while (i < na && j < nb && a[i] === b[j]) {
     i++;
     j++;
   }
 
   let result;
 
-  // eslint-disable-next-line default-case
-  switch ((i === a.length ? 1 : 0) + (j === b.length ? 2 : 0)) {
+  switch ((i === na ? 1 : 0) + (j === nb ? 2 : 0)) {
     case 0:
       result = a[i] - b[j];
       break;
     case 1:
+      // a is a substring of b
+      result = -1;
+      break;
+    case 2:
       // b is a substring of a
       result = 1;
       break;
-    case 2:
-      // a is a substring of b
-      return;
-    case 3:
-      // a and b are equal
-      return;
+    default:
+      throw new Error(`a ${a} and b ${b} are equal`);
   }
 
   if (result > 0) {
@@ -61,7 +62,7 @@ function expectSuffixArray(s, terminator, sa) {
 
   const sequence = [
     ...typeof s === 'string' ? stringToSequence(s) : s,
-    typeof terminator === 'number' ? terminator : terminator.charCodeAt(0),
+    terminator,
   ];
   const counter = {};
 
@@ -87,68 +88,77 @@ describe('suffixArray', () => {
   test('returns the suffix array corresponding to the given string', () => {
     const s = 'monsoonnomnoms';
 
-    const result = suffixArray(s, '$');
+    const result = suffixArray(s);
 
-    expectSuffixArray(s, '$', result);
+    expectSuffixArray(s, -1, result);
   });
 
   test('handles a string with repetitive sections', () => {
     const s = ' 1 2 apple 3 4~4 5 apple 6 7!8 9 apple 1 2@apple 3 4#5 6 apple$apple%'.split('').map(c => c.charCodeAt(0));
 
-    const result = suffixArray(s, '^');
+    const result = suffixArray(s);
 
-    expectSuffixArray(s, '^', result);
+    expectSuffixArray(s, -1, result);
   });
 
   test('handles recursion', () => {
     const sequence = 'abc3abc2abc1'.split('').map(c => c.charCodeAt(0));
 
-    const result = suffixArray(sequence, '$');
+    const result = suffixArray(sequence);
 
-    expectSuffixArray(sequence, '$', result);
+    expectSuffixArray(sequence, -1, result);
   });
 
   test('handles no recursion', () => {
     const sequence = 'abcdefghijklmnopqrstuvwxyz'.split('').map(c => c.charCodeAt(0));
 
-    const result = suffixArray(sequence, '$');
+    const result = suffixArray(sequence);
 
-    expectSuffixArray(sequence, '$', result);
+    expectSuffixArray(sequence, -1, result);
   });
 
   test('handles the empty string', () => {
-    const result = suffixArray('', '$');
+    const result = suffixArray('');
 
-    expectSuffixArray('', '$', result);
+    expectSuffixArray('', -1, result);
   });
 
   test('handles a one character string', () => {
-    const result = suffixArray('1', 'x');
+    const result = suffixArray('1');
 
-    expectSuffixArray('1', 'x', result);
+    expectSuffixArray('1', -1, result);
   });
 
   test('handles a two character string where the first character is less than the second', () => {
-    const result = suffixArray('12', 'x');
+    const result = suffixArray('12');
 
-    expectSuffixArray('12', 'x', result);
+    expectSuffixArray('12', -1, result);
   });
 
   test('handles a two character string where the second character is less than the first', () => {
-    const result = suffixArray('21', 'x');
+    const result = suffixArray('21');
 
-    expectSuffixArray('21', 'x', result);
+    expectSuffixArray('21', -1, result);
   });
 
   test('handles array input', () => {
-    const result = suffixArray('mississippi'.split('').map(c => c.charCodeAt(0)), 'x');
+    const result = suffixArray('mississippi'.split('').map(c => c.charCodeAt(0)));
 
-    expectSuffixArray('mississippi', 'x', result);
+    expectSuffixArray('mississippi', -1, result);
   });
 
-  test('handles integer terminator input', () => {
-    const result = suffixArray('mississippi', 0xe000);
+  test('handles a negative terminator input', () => {
+    const result = suffixArray('mississippi', -2);
 
-    expectSuffixArray('mississippi', 0xe000, result);
+    expectSuffixArray('mississippi', -2, result);
+  });
+
+  test('handles invalid terminator terminator input', () => {
+    expect(() => suffixArray('mississippi', 0)).toThrow();
+    expect(() => suffixArray('mississippi', 1)).toThrow();
+    expect(() => suffixArray('mississippi', 'a')).toThrow();
+    expect(() => suffixArray('mississippi', [])).toThrow();
+    expect(() => suffixArray('mississippi', {})).toThrow();
+    expect(() => suffixArray('mississippi', () => {})).toThrow();
   });
 });

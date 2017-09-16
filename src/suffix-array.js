@@ -1,5 +1,5 @@
 /**
- * Linear-time suffix array implementation using the DC3 (Difference Cover
+ * Linear-time suffix array implementation using the DC3/skew (Difference Cover
  * modulo 3) algorithm.
  *
  * For more information about DC3, see the following resources:
@@ -126,9 +126,7 @@ function samplesToSequence(unsorted, sorted, rankOffset = 0x21 /* ! */) {
   }
 
   if (unique) {
-    return {
-      unique: true,
-    };
+    return { unique: true };
   }
 
   // construct new sequence based on the unsorted samples and their ranks
@@ -136,11 +134,7 @@ function samplesToSequence(unsorted, sorted, rankOffset = 0x21 /* ! */) {
     sample => sampleToRank[sampleToString(sample.slice(1))],
   );
 
-  return {
-    unique: false,
-    samplesSequence,
-    samplesTerminator: rank,
-  };
+  return { unique: false, samplesSequence };
 }
 
 function rankSortedSamples(n, sortedSamples) {
@@ -235,8 +229,8 @@ function createSuffixArray(sequence, terminator) {
   // handle trivial cases
   switch (n) {
     case 0: return [0];
-    case 1: return [0, 1];
-    case 2: return sequence[0] < sequence[1] ? [0, 1, 2] : [1, 0, 2];
+    case 1: return [1, 0];
+    case 2: return sequence[0] < sequence[1] ? [2, 0, 1] : [2, 1, 0];
     default:
       sequence = [...sequence, terminator]; // add terminator to copy of sequence
       break;
@@ -246,13 +240,16 @@ function createSuffixArray(sequence, terminator) {
   const sampledPositions = sampleSequence(sequence, terminator);
 
   let sortedSamples = radixSort(sampledPositions, entry => entry.slice(1));
-  const { unique, samplesSequence, samplesTerminator }
+  const { unique, samplesSequence }
     = samplesToSequence(sampledPositions, sortedSamples, 0x21 /* ! */);
   if (!unique) {
-    const recursiveSuffixArray = createSuffixArray(samplesSequence, samplesTerminator);
+    const recursiveSuffixArray = createSuffixArray(samplesSequence, -1);
 
     sortedSamples = recursiveSuffixArray.map(suffix => sampledPositions[suffix]);
-    sortedSamples.pop(); // remove terminator
+    if (sortedSamples[0] != null) {
+      throw new Error('First entry is not the terminator');
+    }
+    sortedSamples = sortedSamples.slice(1);
   }
 
   const ranks = rankSortedSamples(n, sortedSamples);
@@ -261,21 +258,26 @@ function createSuffixArray(sequence, terminator) {
     createNonSampledPairs(sequence, ranks), entry => entry.slice(1),
   );
 
-  const result = merge(sequence, sortedNonSampledPairs, sortedSamples, ranks);
-  return result;
+  return merge(sequence, sortedNonSampledPairs, sortedSamples, ranks);
 }
 
 /**
- * Calculates the suffix array for the given string and terminator character
- * (which may not be present in the input string).
+ * Calculates the suffix array for the given string and an optional terminator code
+ * which must be negative.
  *
  * @param {number[]|string} s the string or sequence to compute the suffix array for.
- * @param {number|string} terminator a character not in s to use as terminator.
+ * @param {number} [terminator=-1] an optional negative terminator code.
  * @return {number[]} a suffix array.
  */
-export default function suffixArray(s, terminator) {
+export default function suffixArray(s, terminator = -1) {
   const sequence = Array.isArray(s) ? s : stringToSequence(s);
-  const t = typeof terminator === 'string' ? terminator.charCodeAt(0) : terminator;
+  const t = terminator != null ? terminator : -1;
+  if (typeof t !== 'number') {
+    throw new TypeError(`the terminator argument is not a number: ${typeof terminator}`);
+  }
+  if (t > -1) {
+    throw new Error(`the terminator is not a negative integer: ${terminator}`);
+  }
 
   const result = createSuffixArray(sequence, t);
 

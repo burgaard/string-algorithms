@@ -27,13 +27,11 @@
 import radixSort from './radix-sort';
 import suffixArray from './suffix-array';
 import longestCommonPrefix from './longest-common-prefix';
-import suffixTree from './suffix-tree';
 import longestCommonSubstring from './longest-common-substring';
 
 export {
   radixSort,
   suffixArray,
   longestCommonPrefix,
-  suffixTree,
   longestCommonSubstring,
 };
