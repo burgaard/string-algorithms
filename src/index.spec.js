@@ -24,13 +24,13 @@ import {
   radixSort,
   suffixArray,
   longestCommonPrefix,
-  multipleLongestCommonSubstring,
+  longestCommonSubstring,
 } from './index';
 
 import radixSortOrig from './radix-sort';
 import suffixArrayOrig from './suffix-array';
 import longestCommonPrefixOrig from './longest-common-prefix';
-import multipleLongestCommonSubstringOrig from './multiple-longest-common-substring';
+import longestCommonSubstringOrig from './longest-common-substring';
 
 describe('exports', () => {
   it('exports radixSort', () => {
@@ -45,7 +45,7 @@ describe('exports', () => {
     expect(longestCommonPrefix).toBe(longestCommonPrefixOrig);
   });
 
-  it('exports multipleLongestCommonSubstring', () => {
-    expect(multipleLongestCommonSubstring).toBe(multipleLongestCommonSubstringOrig);
+  it('exports longestCommonSubstring', () => {
+    expect(longestCommonSubstring).toBe(longestCommonSubstringOrig);
   });
 });

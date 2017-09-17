@@ -12,7 +12,7 @@ The algorithms implemented are:
  - `longestCommonPrefix` calculates the
    [longest common prefixes](https://en.wikipedia.org/wiki/LCP_array) given a
    suffix array in O(n).
- - `multipleLongestCommonSubstring` calculates the longest common substring of
+ - `longestCommonSubstring` calculates the longest common substring of
    two or more strings in O(n) or O(n + log(k)) depending on the chosen index
    map implementation. The O(n) version requires an additional O(n) space,
    wheras the O(n + log(k)) version only requires an additional O(k) space).
@@ -36,7 +36,7 @@ factors shorter than the maximum heap size.
 Find the longest common substring:
 
 ```javascript
-import { multipleLongestCommonSubstring } from 'string-algorithms';
+import { longestCommonSubstring } from 'string-algorithms';
 
 const strings = [
   '12apple',
@@ -44,7 +44,7 @@ const strings = [
   'apple56'
 ];
 
-console.log(multipleLongestCommonSubstring(strings));
+console.log(longestCommonSubstring(strings));
 ```
 
 produces the output `apple`.
@@ -96,7 +96,7 @@ produces the output
 
 ...
 
-### `multipleLongestCommonSubstring`
+### `longestCommonSubstring`
 
 ...
 

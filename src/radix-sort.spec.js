@@ -23,7 +23,7 @@
 import radixSort from './radix-sort';
 
 describe('radixSort', () => {
-  test('sorts array elements with 3 entries', () => {
+  it('sorts array elements with 3 entries', () => {
     const input = [
       [9, 4, 0], [4, 2, 3], [4, 2, 1], [1, 0, 6], [4, 2, 5], [4, 6, 8],
     ];
@@ -35,7 +35,7 @@ describe('radixSort', () => {
     ]);
   });
 
-  test('handles negative entries', () => {
+  it('handles negative entries', () => {
     const input = [
       [-9, 4, 0],
       [4, -2, 3],
@@ -57,7 +57,7 @@ describe('radixSort', () => {
     ]);
   });
 
-  test('uses the given function to compute each subarray', () => {
+  it('uses the given function to compute each subarray', () => {
     const input = [
       { a: 1, b: [9, 4, 0] },
       { a: 2, b: [4, 2, 3] },
@@ -79,7 +79,7 @@ describe('radixSort', () => {
     ]);
   });
 
-  test('returns the original array when there is only one entry to sort', () => {
+  it('returns the original array when there is only one entry to sort', () => {
     const input = [
       [1, 2],
     ];
@@ -89,7 +89,7 @@ describe('radixSort', () => {
     expect(result).toBe(input);
   });
 
-  test('returns the original array when there are no entries to sort', () => {
+  it('returns the original array when there are no entries to sort', () => {
     const input = [];
 
     const result = radixSort(input);
@@ -97,7 +97,7 @@ describe('radixSort', () => {
     expect(result).toBe(input);
   });
 
-  test('returns the original array when the sub-arrays are empty', () => {
+  it('returns the original array when the sub-arrays are empty', () => {
     const input = [
       [], [], [],
     ];
@@ -107,7 +107,7 @@ describe('radixSort', () => {
     expect(result).toBe(input);
   });
 
-  test('throws an error if a sub-array is shorter than the first sub-array', () => {
+  it('throws an error if a sub-array is shorter than the first sub-array', () => {
     const input = [
       [9, 4, 0],
       [4, 2, 3],

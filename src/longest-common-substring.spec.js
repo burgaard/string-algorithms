@@ -20,11 +20,11 @@
  * SOFTWARE.
  */
 
-import multipleLongestCommonSubstring, {
+import longestCommonSubstring, {
   StringIndexMap,
   LogStringIndexMap,
   LinearStringIndexMap,
-} from './multiple-longest-common-substring';
+} from './longest-common-substring';
 
 describe('StringIndexMap', () => {
   it('defaults the ranges array to length 0', () => {
@@ -221,187 +221,187 @@ describe('LinearStringIndexMap', () => {
 
 describe('longestCommonSubstring', () => {
   it('finds the longest common substring', () => {
-    const result = multipleLongestCommonSubstring(['testing mississipi', 'xmississipiy', 'mississipipy']);
+    const result = longestCommonSubstring(['testing mississipi', 'xmississipiy', 'mississipipy']);
 
     expect(result).toEqual(['mississipi']);
   });
 
   it('handles string index map == log', () => {
-    const result = multipleLongestCommonSubstring(['testing mississipi', 'xmississipiy', 'mississipipy'], 'log');
+    const result = longestCommonSubstring(['testing mississipi', 'xmississipiy', 'mississipipy'], 'log');
 
     expect(result).toEqual(['mississipi']);
   });
 
   it('handles string index map == linear', () => {
-    const result = multipleLongestCommonSubstring(['testing mississipi', 'xmississipiy', 'mississipipy'], 'linear');
+    const result = longestCommonSubstring(['testing mississipi', 'xmississipiy', 'mississipipy'], 'linear');
 
     expect(result).toEqual(['mississipi']);
   });
 
   it('handles a LogStringIndexMap', () => {
-    const result = multipleLongestCommonSubstring(['testing mississipi', 'xmississipiy', 'mississipipy'], new LogStringIndexMap(3));
+    const result = longestCommonSubstring(['testing mississipi', 'xmississipiy', 'mississipipy'], new LogStringIndexMap(3));
 
     expect(result).toEqual(['mississipi']);
   });
 
   it('handles a LinearStringIndexMap', () => {
-    const result = multipleLongestCommonSubstring(['testing mississipi', 'xmississipiy', 'mississipipy'], new LinearStringIndexMap(3));
+    const result = longestCommonSubstring(['testing mississipi', 'xmississipiy', 'mississipipy'], new LinearStringIndexMap(3));
 
     expect(result).toEqual(['mississipi']);
   });
 
   it('handles identical one character strings', () => {
-    const result = multipleLongestCommonSubstring(['a', 'a']);
+    const result = longestCommonSubstring(['a', 'a']);
 
     expect(result).toEqual(['a']);
   });
 
   it('handles different character strings', () => {
-    const result = multipleLongestCommonSubstring(['a', 'b']);
+    const result = longestCommonSubstring(['a', 'b']);
 
     expect(result).toEqual([]);
   });
 
   it('handles identical two character strings', () => {
-    const result = multipleLongestCommonSubstring(['ab', 'ab']);
+    const result = longestCommonSubstring(['ab', 'ab']);
 
     expect(result).toEqual(['ab']);
   });
 
   it('handles two character strings with overlap', () => {
-    const result = multipleLongestCommonSubstring(['ab', 'ba']);
+    const result = longestCommonSubstring(['ab', 'ba']);
 
     expect(result).toEqual(['a', 'b']);
   });
 
   it('handles two character strings with no common substring', () => {
-    const result = multipleLongestCommonSubstring(['ab', 'cd']);
+    const result = longestCommonSubstring(['ab', 'cd']);
 
     expect(result).toEqual([]);
   });
 
   it('handles short strings', () => {
-    const result = multipleLongestCommonSubstring(['aba', 'bab']);
+    const result = longestCommonSubstring(['aba', 'bab']);
 
     expect(result).toEqual(['ab', 'ba']);
   });
 
   it('handles no strings', () => {
-    const result = multipleLongestCommonSubstring([]);
+    const result = longestCommonSubstring([]);
 
     expect(result).toEqual([]);
   });
 
   it('handles one string', () => {
-    const result = multipleLongestCommonSubstring(['alpha']);
+    const result = longestCommonSubstring(['alpha']);
 
     expect(result).toEqual(['alpha']);
   });
 
   it('finds the longest common substring of multiple strings', () => {
-    const result = multipleLongestCommonSubstring(['1apple2', '2apple3', '3apple4', '4apple5', '5apple6']);
+    const result = longestCommonSubstring(['1apple2', '2apple3', '3apple4', '4apple5', '5apple6']);
 
     expect(result).toEqual(['apple']);
   });
 
   it('works with linear index mapping', () => {
-    const result = multipleLongestCommonSubstring(['1apple2', '2apple3', '3apple4', '4apple5', '5apple6'], 'linear');
+    const result = longestCommonSubstring(['1apple2', '2apple3', '3apple4', '4apple5', '5apple6'], 'linear');
 
     expect(result).toEqual(['apple']);
   });
 
   it('finds the longest common substring of multiple strings with no common substring', () => {
-    const result = multipleLongestCommonSubstring(['aaaa', 'bbbb', 'cccc', 'dddd', 'eeee']);
+    const result = longestCommonSubstring(['aaaa', 'bbbb', 'cccc', 'dddd', 'eeee']);
 
     expect(result).toEqual([]);
   });
 
   it('finds the longest common substring of multiple identical strings', () => {
-    const result = multipleLongestCommonSubstring(['aaaa', 'aaaa', 'aaaa', 'aaaa', 'aaaa']);
+    const result = longestCommonSubstring(['aaaa', 'aaaa', 'aaaa', 'aaaa', 'aaaa']);
 
     expect(result).toEqual(['aaaa']);
   });
 
   it('finds the longest common substring of multiple almost identical strings', () => {
-    const result = multipleLongestCommonSubstring(['ax', 'ax', 'a']);
+    const result = longestCommonSubstring(['ax', 'ax', 'a']);
 
     expect(result).toEqual(['a']);
   });
 
   it('finds the longest common substring of two almost identical strings', () => {
-    const result = multipleLongestCommonSubstring(['aaaa', 'aaas']);
+    const result = longestCommonSubstring(['aaaa', 'aaas']);
 
     expect(result).toEqual(['aaa']);
   });
 
   it('handles repeat substring in one string but no common substring', () => {
-    const result = multipleLongestCommonSubstring(['alphaalpha', 'xyz']);
+    const result = longestCommonSubstring(['alphaalpha', 'xyz']);
 
     expect(result).toEqual([]);
   });
 
   it('throws an error when given a boolean', () => {
-    expect(() => multipleLongestCommonSubstring(true)).toThrow();
-    expect(() => multipleLongestCommonSubstring(false)).toThrow();
+    expect(() => longestCommonSubstring(true)).toThrow();
+    expect(() => longestCommonSubstring(false)).toThrow();
   });
 
   it('throws an error when given a number', () => {
-    expect(() => multipleLongestCommonSubstring(1)).toThrow();
-    expect(() => multipleLongestCommonSubstring(-1.2)).toThrow();
+    expect(() => longestCommonSubstring(1)).toThrow();
+    expect(() => longestCommonSubstring(-1.2)).toThrow();
   });
 
   it('throws an error when given an object', () => {
-    expect(() => multipleLongestCommonSubstring({})).toThrow();
+    expect(() => longestCommonSubstring({})).toThrow();
   });
 
   it('throws an error when given an string', () => {
-    expect(() => multipleLongestCommonSubstring('[]')).toThrow();
-    expect(() => multipleLongestCommonSubstring('')).toThrow();
+    expect(() => longestCommonSubstring('[]')).toThrow();
+    expect(() => longestCommonSubstring('')).toThrow();
   });
 
   it('throws an error when given an function', () => {
-    expect(() => multipleLongestCommonSubstring(() => {})).toThrow();
+    expect(() => longestCommonSubstring(() => {})).toThrow();
   });
 
   it('throws an error when given an array with a boolean', () => {
-    expect(() => multipleLongestCommonSubstring([true])).toThrow();
+    expect(() => longestCommonSubstring([true])).toThrow();
   });
 
   it('throws an error when given an array with a number', () => {
-    expect(() => multipleLongestCommonSubstring([42])).toThrow();
+    expect(() => longestCommonSubstring([42])).toThrow();
   });
 
   it('throws an error when given an empty string', () => {
-    expect(() => multipleLongestCommonSubstring([''])).toThrow();
+    expect(() => longestCommonSubstring([''])).toThrow();
   });
 
   it('throws an error when given multiple strings and one is empty', () => {
-    expect(() => multipleLongestCommonSubstring(['alpha', 'beta', ''])).toThrow();
+    expect(() => longestCommonSubstring(['alpha', 'beta', ''])).toThrow();
   });
 
   it('throws an error when given an boolean indexMap', () => {
-    expect(() => multipleLongestCommonSubstring(['a', 'b'], false)).toThrow();
-    expect(() => multipleLongestCommonSubstring(['a', 'b'], true)).toThrow();
+    expect(() => longestCommonSubstring(['a', 'b'], false)).toThrow();
+    expect(() => longestCommonSubstring(['a', 'b'], true)).toThrow();
   });
 
   it('throws an error when given an number indexMap', () => {
-    expect(() => multipleLongestCommonSubstring(['a', 'b'], 42)).toThrow();
+    expect(() => longestCommonSubstring(['a', 'b'], 42)).toThrow();
   });
 
   it('throws an error when given an object indexMap', () => {
-    expect(() => multipleLongestCommonSubstring(['a', 'b'], {})).toThrow();
+    expect(() => longestCommonSubstring(['a', 'b'], {})).toThrow();
   });
 
   it('throws an error when given an array indexMap', () => {
-    expect(() => multipleLongestCommonSubstring(['a', 'b'], [])).toThrow();
+    expect(() => longestCommonSubstring(['a', 'b'], [])).toThrow();
   });
 
   it('throws an error when given an function indexMap', () => {
-    expect(() => multipleLongestCommonSubstring(['a', 'b'], () => {})).toThrow();
+    expect(() => longestCommonSubstring(['a', 'b'], () => {})).toThrow();
   });
 
   it('throws an error when given an invalid string', () => {
-    expect(() => multipleLongestCommonSubstring(['a', 'b'], 'alpha')).toThrow();
-    expect(() => multipleLongestCommonSubstring(['a', 'b'], '')).toThrow();
+    expect(() => longestCommonSubstring(['a', 'b'], 'alpha')).toThrow();
+    expect(() => longestCommonSubstring(['a', 'b'], '')).toThrow();
   });
 });

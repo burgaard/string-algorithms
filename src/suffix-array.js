@@ -257,6 +257,14 @@ function createSuffixArray(sequence, terminator) {
   return merge(sequence, sortedNonSampledPairs, sortedSamples, ranks);
 }
 
+export function suffixArrayToString(s, sa) {
+  const sequence = Array.isArray(s) ? s : stringToSequence(s);
+  return ['[']
+    .concat(sa.map(i => `  ${i}, // ${sequence.slice(i).map(c => String.fromCharCode(c)).join('')}`))
+    .concat(']')
+    .join('\n');
+}
+
 /**
  * Calculates the suffix array for the given string and an optional terminator code
  * which must be negative.

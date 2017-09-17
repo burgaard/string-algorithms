@@ -236,7 +236,7 @@ function ensureNonEmptyString(e) {
  *   given a string, it must be one of 'log' or 'linear'.
  * @return {string|string[]} the longest common substring(s).
  */
-export default function multipleLongestCommonSubstring(strings, indexMap = 'log') {
+export default function longestCommonSubstring(strings, indexMap = 'log') {
   if (!Array.isArray(strings)) {
     throw new TypeError('strings argument must be an array of strings');
   }
