@@ -323,7 +323,7 @@ describe('longestCommonSubstring', () => {
   });
 
   it('finds the longest common substring of multiple almost identical strings', () => {
-    const result = longestCommonSubstring(['ax', 'ax', 'a']);
+    const result = longestCommonSubstring(['a', 'ax', 'ax', 'a']);
 
     expect(result).toEqual(['a']);
   });

@@ -272,35 +272,67 @@ export default function longestCommonSubstring(strings, indexMap = 'log') {
 
   let result = [];
   let longest = 1;
+  let top = -1;
+  let suffix = sa[0];
+  let stringIndex = stringIndexMap.lookup(sa[0]);
+  const entryStack = [];
 
   let i = 0;
   while (i < sa.length - 1) {
     const h = lcp[i];
-    if (h >= longest) {
-      const index = sa[i];
-      const entries = {
-        [stringIndexMap.lookup(sa[i])]: true,
-        [stringIndexMap.lookup(sa[i + 1])]: true,
-      };
-
-      let j = i + 2;
-      while (j < sa.length && h === lcp[j - 1]) {
-        entries[stringIndexMap.lookup(sa[j])] = true;
+    const suffixNext = sa[i + 1];
+    const stringIndexNext = stringIndexMap.lookup(suffixNext);
+    let j = 0;
+    if (h >= top && h > 0) {
+      while (j < h) {
+        if (j >= entryStack.length) {
+          entryStack[j] = {};
+        }
+        entryStack[j][stringIndex] = [suffix, j + 1];
+        entryStack[j][stringIndexNext] = [suffixNext, j + 1];
         j++;
       }
+      top = j;
+    }
 
-      if (Object.keys(entries).length === k) {
-        if (h === longest) {
-          result.push([index, h]);
-        } else {
-          result = [[index, h]];
-          longest = h;
+    j = top;
+    while (j > h) {
+      const entries = entryStack.pop();
+      if (j >= longest) {
+        const keys = Object.keys(entries);
+        if (keys.length === k) {
+          const r = entries[keys[0]];
+          if (j > longest) {
+            longest = j;
+            result = [r];
+          } else {
+            result.push(r);
+          }
         }
       }
+      j--;
+    }
 
-      i = j - 1;
-    } else {
-      i++;
+    top = h;
+    i++;
+    suffix = suffixNext;
+    stringIndex = stringIndexNext;
+  }
+
+  while (entryStack.length > 0) {
+    const j = entryStack.length;
+    const entries = entryStack.pop();
+    if (j >= longest) {
+      const keys = Object.keys(entries);
+      if (keys.length === k) {
+        const r = entries[keys[0]];
+        if (j > longest) {
+          longest = j;
+          result = [r];
+        } else {
+          result.push(r);
+        }
+      }
     }
   }
 
