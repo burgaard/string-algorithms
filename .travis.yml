@@ -2,11 +2,11 @@ language: node_js
 node_js: '8'
 cache: yarn
 script: yarn build
+before_deploy: npm version patch -m "Releasing version %s"
 deploy:
   provider: npm
   email: kim@burgaard.us
   api_key:
     secure: Pace+Y1um2F1deF/9gfE9IqSxXzxKHUJvTV7Q1NBiLOirAnXZS5bvvQdOh7kSINHR4Qm5Q+UVEjTX2pWfHR5QoAUsBlIkVx6cv22xgdo+xawA1d5UgW3eU56STNhXbvUE8uP6dqO4OhqHVpZuFOhRB4SwXJBWsfm7OGFOnw3USUWqVdsYRoAYC0Ylo5j2WswIZLO1zBd4TPkwPdVr6NaJ2YjlajUXzjLEpuQd68DHrPHOnI5dw9T1ZWJvR6Ix+rh7xnBAAe1h0gRerLtoODEZundziVi2ejpfPaEvirDoyNXSwaBKd/MO4zoXIFlMfVVhlcrWcT1vuImtDTxjVnouL9Gu5Z+MrJ3PUEDRmnviCVD7Cqbwtcic+hGHNHIgEFAnfZP3Sp/ExiDTpIUX8kc1p+dJnhIxTz98I+F0jlGrIzulzz1CAazn81GnlXsBpnCpcAUDlH3hZyHPxpYkkIJq/SS9Q5f9zAsZ1JICnAZEqCfJmEk9oOm7UqsFq4DVHgLJQCDYotpomJi9Z89Mk1DN9CGQMIKfJOjQdM3kOizjLn/h+u3ra6bkno75mJoZC26CyhtsyUrHTdhGRU2nPekJTJLubQhsNrRiihrx39pN/E7jnH8wfMgOFWJRiV8SA9w36vG0YcwCmloksrwZCSfp21WzKSiCpMEmuFK7pu8CYI=
-  tag: next
   on:
     branch: master
