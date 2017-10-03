@@ -28,8 +28,8 @@
 /**
  * Calculates the longest common prefix from a suffix array in linear time.
  *
- * @param {string[]} a sequence of character codes
- * @param {number[]} the corresponding suffix array.
+ * @param {string[]} sequence a sequence of character codes
+ * @param {number[]} suffixArray the corresponding suffix array.
  * @return number[] a longest common prefix array.
  */
 export default function longestCommonPrefix(sequence, suffixArray) {

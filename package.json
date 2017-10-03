@@ -1,7 +1,7 @@
 {
   "name": "string-algorithms",
   "version": "1.0.0",
-  "description": "Linear-time Multiple Longest Common Substring.",
+  "description": "Linear-time string search and comparison algorithms.",
   "author": "Kim Burgaard <kim@burgaard.us> (http://www.burgaard.us)",
   "license": "MIT",
   "keywords": [

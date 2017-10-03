@@ -25,7 +25,7 @@ The algorithms implemented are:
 **Note**: While the algorithms are linear-time implementations, they are still
 outperformed by readily available C/C++ implementations. Due to limitations of
 Node.js, the maximum string size is currently limited too by the maximum heap
-size which is currently just shy of 2GB. The actual longest string that can
+size which is currently just shy of 2GB--and the actual longest string that can
 be handled by the multiple longest common substring algorithm will be sevaral
 factors shorter than the maximum heap size.
 
@@ -84,22 +84,85 @@ produces the output
 
 ## API
 
-### `radixSort`
+### `function radixSort(entries, getEntry)`
 
-...
+Radix sorts an array of entries. If getEntry is not given, then entries is assumed to contain
+an array of arrays where each sub-array is of the same length. If getEntry is given, then the
+entries may be of any type, but getEntry must return an array corresponding to each entry.
 
-### `suffixArray`
+`entries` is an array with entries to be radix sorted.
 
-...
+`getEntry` is an optional function for retrieving each entry as an array. For example, entries
+may contain arrays that are all 4 elements long, but only the last three elements should be
+considered for sorting. In that case, `getEntry` could be `entry => entry.slice(1)`.
 
-### `longestCommonPrefix`
+Returns a new array with the sorted entries.
 
-...
+### `function suffixArray(s, terminator)`
 
-### `longestCommonSubstring`
+Calculates the suffix array for the given string and an optional terminator code which must be
+negative.
 
-...
+`s` is the string or array of character codes to compute the suffix array for.
 
+`terminator` is an optional negative terminator code. The terminator code must not be present
+anywhere in `s`.
+
+Returns an array with the sorted suffixes of `s`.
+
+### `function longestCommonPrefix(sequence, suffixArray)`
+
+Calculates the longest common prefix from a suffix array in linear time.
+
+`sequence` is a sequence of character codes.
+
+`suffixArray` is the suffix array corresponding to `sequence`.
+
+Returns an array indicating the height of the shared prefix between adjecent suffix array
+entries.
+
+### `function longestCommonSubstring(strings, indexMap)`
+
+ Finds the longest common substring(s) in the set of given strings. If there are multiple
+ substrings that all share the longest length, then all such substrings are returned. O(n) or
+ O(n * log(K)) depending on the selected string indexing strategy.
+ 
+ `strings` is an array of strings.
+
+ `indexMap` is the optional string indexing map strategy. If given a string, it must be one
+ of 'log' or 'linear'. Otherwise it must be an object that derives from `StringIndexMap`. The
+ default value is 'log'.
+
+Returns an array with the longest common substrings(s).
+
+### `class StringIndexMap`
+
+Maps the position of strings s1 ... sK when concatenated into one string. Concrete
+implementations provide different compromises between O(1) and O(log(K)) lookup times versus
+O(n) and O(k) space requirements. Extend this class to implement custom mappings from string
+positions to substring indices with different runtime/space tradeoffs than the two predefined
+implementations.
+
+#### `function add(length)`
+
+Adds a substring with the given length.
+
+`length` is the length of the substring.
+
+Returns the current total length of all substrings.
+
+#### `lookup(position)`
+
+Looks up the substring corresponding to the given position in the concatenated string.
+
+`position` is the position in the concatenated string
+
+Returns the index of the substring that contains the given position.
+
+#### `toString()`
+
+Returns a string representation of the string index map.
+ 
 ## Contributing
 
 Contributions welcome; Please submit all pull requests against the master
