@@ -1,6 +1,6 @@
 {
   "name": "string-algorithms",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Linear-time string search and comparison algorithms.",
   "author": "Kim Burgaard <kim@burgaard.us> (http://www.burgaard.us)",
   "license": "MIT",
