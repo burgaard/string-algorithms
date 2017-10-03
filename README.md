@@ -177,5 +177,5 @@ Kim Burgaard.
 
 ## License
 
-[MIT](./LICENSE.txt)
+[MIT](./LICENSE)
 
