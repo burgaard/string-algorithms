@@ -35,22 +35,25 @@ function expectStringOrder(a, b) {
   let result;
 
   switch ((i === na ? 1 : 0) + (j === nb ? 2 : 0)) {
-    case 0:
-      result = a[i] - b[j];
+    case 0: {
+      const av = a[i];
+      const bv = b[j];
+      result = (av < 0 && bv < 0) ? true : a[i] <= b[j];
       break;
+    }
     case 1:
       // a is a substring of b
-      result = -1;
+      result = true;
       break;
     case 2:
       // b is a substring of a
-      result = 1;
+      result = a[i] < 0 && b[j] < 0;
       break;
     default:
       throw new Error(`a ${a} and b ${b} are equal`);
   }
 
-  if (result > 0) {
+  if (!result) {
     // eslint-disable-next-line no-console
     throw new Error(`Expected a to compare less than or equal to b:\n    a: ${a}\n    b: ${b}`);
   }
