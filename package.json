@@ -1,8 +1,16 @@
 {
   "name": "string-algorithms",
-  "version": "1.0.5",
+  "version": "1.0.8",
   "description": "Linear-time string search and comparison algorithms.",
-  "author": "Kim Burgaard <kim@burgaard.us> (http://www.burgaard.us)",
+  "homepage": "https://github.com/burgaard/string-algorithms",
+  "bugs": {
+    "url" : "https://github.com/burgaard/string-algorithms/issues",
+    "email" : "kim@burgaard.us"
+  },
+  "author": {
+    "name": "Kim Burgaard",
+    "email": "kim@burgaard.us"
+  },
   "license": "MIT",
   "keywords": [
     "suffix",
@@ -20,7 +28,7 @@
     "o(n)",
     "algorithm"
   ],
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "lint": "eslint src/**/*.js",
     "test": "jest --coverage",

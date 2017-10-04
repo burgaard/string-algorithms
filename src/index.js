@@ -27,11 +27,12 @@
 import radixSort from './radix-sort';
 import suffixArray from './suffix-array';
 import longestCommonPrefix from './longest-common-prefix';
-import longestCommonSubstring from './longest-common-substring';
+import longestCommonSubstring, { StringIndexMap } from './longest-common-substring';
 
 export {
   radixSort,
   suffixArray,
   longestCommonPrefix,
   longestCommonSubstring,
+  StringIndexMap,
 };
