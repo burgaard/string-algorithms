@@ -4,4 +4,6 @@ git remote set-url origin https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG}
 git config --global user.email "travis@travis-ci.org"
 git config --global user.name "Travis CI"
 
-npm version patch -m "Releasing version %s [ci skip]" && git push origin HEAD:master && git push origin HEAD:master --tags;
+if [ -z "${TRAVIS_TAG}" ]; then
+  npm version patch -m "Releasing version %s [ci skip]" && git push origin HEAD:master && git push origin HEAD:master --tags;
+fi
