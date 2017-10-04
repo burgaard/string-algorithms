@@ -60,7 +60,7 @@
       "!**/vendor/**"
     ],
     "coverageReporters": [
-      "text"
+      "text", "lcov"
     ]
   }
 }
