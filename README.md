@@ -122,8 +122,7 @@ const strings = [
   'mango'
 ];
 
-const result = radixSort(strings, s => s.split('').map(c => c.charCodeAt(0)))
-                        .map(e => String.fromCharCode(...e));
+const result = radixSort(strings, s => s.split('').map(c => c.charCodeAt(0)));
 
 /*
 [
