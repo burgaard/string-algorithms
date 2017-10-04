@@ -1,5 +1,6 @@
 # String Algorithms
 
+
 [![Build Status](https://travis-ci.org/burgaard/string-algorithms.svg?branch=master)](https://travis-ci.org/burgaard/string-algorithms) [![Coverage Status](https://coveralls.io/repos/burgaard/string-algorithms/badge.svg)](https://coveralls.io/r/burgaard/string-algorithms)
 
 ## Features
@@ -16,20 +17,21 @@ The algorithms implemented are:
    suffix array in O(n).
  - `longestCommonSubstring` calculates the longest common substring of
    two or more strings in O(n) or O(n + log(k)) depending on the chosen index
-   map implementation. The O(n) version requires an additional O(n) space,
-   wheras the O(n + log(k)) version only requires an additional O(k) space).
+   map implementation. The former version requires an additional O(n) space,
+   whereas the latter version only requires an additional O(k) space.
  - `radixSort` sorts an array with number arrays that are all of the same
    length in O(n).
  - `suffixArray` calculates the
    [suffix array](https://en.wikipedia.org/wiki/Suffix_array) of a given string
    in O(n).
 
-**Note**: While the algorithms are linear-time implementations, they are still
-outperformed by readily available C/C++ implementations. Due to limitations of
-Node.js, the maximum string size is currently limited too by the maximum heap
-size which is currently just shy of 2GB--and the actual longest string that can
-be handled by the multiple longest common substring algorithm will be sevaral
-factors shorter than the maximum heap size.
+**Note**: While the algorithms provided here are linear-time implementations,
+they are still outperformed by readily available C/C++ implementations.
+
+Due to limitations of Node.js, the maximum string size is currently limited too
+by the maximum heap size which is currently just shy of 2GB--and the actual
+longest string that can be handled by the multiple longest common substring
+algorithm will be sevaral factors shorter than the maximum heap size.
 
 ## Examples
 
@@ -65,6 +67,7 @@ produces the output
 
 ```javascript
 [
+  11, //  $
   10, // i
   7, //  ippi
   4, //  issippi
@@ -75,22 +78,76 @@ produces the output
   6, //  sippi
   3, //  sissippi
   5, //  ssippi
-  2, //  ssissippi
-  11 //  $
+  2 //  ssissippi
 ]
+```
+
+### Radix Sort
+
+Given an array with arrays of integers:
+
+```javascript
+import { radixSort } from 'string-algorithms';
+
+const integers = [
+  [-9,  4,  0],
+  [ 4, -2,  3],
+  [ 4,  2, -1],
+  [ 1,  0,  6],
+  [-4, -2, -5],
+  [ 4,  6,  8],
+];
+
+const result = radixSort(integers);
+
+/*
+[
+  [-9,  4,  0],
+  [-4, -2, -5],
+  [ 1,  0,  6],
+  [ 4, -2,  3],
+  [ 4,  2, -1],
+  [ 4,  6,  8],
+];
+*/
+```
+
+Given an array of strings and a function that converts each string to an array of char codes:
+
+```javascript
+const strings = [
+  'image',
+  'mania',
+  'genom',
+  'mango'
+];
+
+const result = radixSort(strings, s => s.split('').map(c => c.charCodeAt(0)))
+                        .map(e => String.fromCharCode(...e));
+
+/*
+[
+  'genom',
+  'image',
+  'mango',
+  'mania'
+]
+*/
 ```
 
 ## Install
 
-    npm install --save string-algorithms
+```
+npm install --save string-algorithms
+```
 
 ## API
 
 ### `function radixSort(entries, getEntry)`
 
-Radix sorts an array of entries. If getEntry is not given, then entries is assumed to contain
-an array of arrays where each sub-array is of the same length. If getEntry is given, then the
-entries may be of any type, but getEntry must return an array corresponding to each entry.
+Radix sorts an array of entries. If `getEntry` is not given, then entries is assumed to contain
+an array of arrays where each sub-array is of the same length. If `getEntry` is given, then the
+entries may be of any type, but `getEntry` must return an array corresponding to each entry.
 
 `entries` is an array with entries to be radix sorted.
 
@@ -167,15 +224,14 @@ Returns a string representation of the string index map.
  
 ## Contributing
 
-Contributions welcome; Please submit all pull requests against the master
-branch. If your pull request contains JavaScript patches or features, you
-should include relevant unit tests. Please check the
-[Contributing Guidelines](./CONTRIBUTING.md)
-for more details. Thanks!
+Contributions welcome; Please submit all pull requests against the master branch. If your
+pull request contains JavaScript patches or features, you should include relevant unit
+tests. Please check the [Contributing Guidelines](./CONTRIBUTING.md) for more details.
+Thanks!
 
 ## Author
 
-Kim Burgaard.
+Kim Burgaard &lt;kim@burgaard.us&gt;.
 
 ## License
 
