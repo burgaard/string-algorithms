@@ -53,6 +53,8 @@ console.log(longestCommonSubstring(strings));
 
 produces the output `apple`.
 
+[Run the example](https://runkit.com/burgaard/59d49064735bd50012ba2525).
+
 ### Suffix Array
 
 Find the suffix array of `mississippi`:
@@ -81,6 +83,8 @@ produces the output
   2 //  ssissippi
 ]
 ```
+
+[Run the example](https://runkit.com/burgaard/59d4902271579b00119965db).
 
 ### Radix Sort
 
@@ -112,6 +116,8 @@ const result = radixSort(integers);
 */
 ```
 
+[Run the example](https://runkit.com/burgaard/59d48f7d71579b0011996590).
+
 Given an array of strings and a function that converts each string to an array of char codes:
 
 ```javascript
@@ -133,6 +139,8 @@ const result = radixSort(strings, s => s.split('').map(c => c.charCodeAt(0)));
 ]
 */
 ```
+
+[Run the example](https://runkit.com/burgaard/59d482d2735bd50012ba1ee7).
 
 ## Install
 
