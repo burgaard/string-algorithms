@@ -1,6 +1,6 @@
 {
   "name": "string-algorithms",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Linear-time string search and comparison algorithms.",
   "homepage": "https://github.com/burgaard/string-algorithms",
   "bugs": {
