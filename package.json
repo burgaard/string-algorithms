@@ -1,6 +1,6 @@
 {
   "name": "string-algorithms",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Linear-time string search and comparison algorithms.",
   "homepage": "https://github.com/burgaard/string-algorithms",
   "bugs": {
@@ -60,7 +60,8 @@
       "!**/vendor/**"
     ],
     "coverageReporters": [
-      "text", "lcov"
+      "text",
+      "lcov"
     ]
   }
 }
