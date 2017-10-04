@@ -1,5 +1,7 @@
 # String Algorithms
 
+[![Build Status](https://travis-ci.org/burgaard/string-algorithms.svg?branch=master)](https://travis-ci.org/burgaard/string-algorithms) [![Coverage Status](https://coveralls.io/repos/burgaard/string-algorithms/badge.svg)](https://coveralls.io/r/burgaard/string-algorithms)
+
 ## Features
 
 This package implements a collection of linear-time and linear-space string
