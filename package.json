@@ -1,11 +1,11 @@
 {
   "name": "string-algorithms",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Linear-time string search and comparison algorithms.",
   "homepage": "https://github.com/burgaard/string-algorithms",
   "bugs": {
-    "url" : "https://github.com/burgaard/string-algorithms/issues",
-    "email" : "kim@burgaard.us"
+    "url": "https://github.com/burgaard/string-algorithms/issues",
+    "email": "kim@burgaard.us"
   },
   "author": {
     "name": "Kim Burgaard",
