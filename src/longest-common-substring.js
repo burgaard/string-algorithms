@@ -1,6 +1,13 @@
 /**
  *
- * Linear-time computation of the Longest Common Substring.
+ * Linear-time computation of the Longest Common Substring. This implementation
+ * computes the suffix array and the longest common prefix array, which is more
+ * space efficient than constructing a generalized suffix tree. The substrings
+ * are concatenated with unique markers and their positions recorded in a
+ * string index map. Iterating over the heights given in the longest common
+ * prefix array, the string index map is used to lookup whet substring each
+ * suffix array enry belongs to. If k substrings are seen at the same height,
+ * then a common substring across all given substrings has been found.
  *
  * Copyright (C) 2017 Kim Burgaard <kim@burgaard.us>
  *

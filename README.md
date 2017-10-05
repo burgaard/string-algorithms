@@ -14,19 +14,31 @@ The algorithms implemented are:
 
  - `longestCommonPrefix` calculates the
    [longest common prefixes](https://en.wikipedia.org/wiki/LCP_array) given a
-   suffix array in O(n).
+   suffix array. This implementation is based on
+   [Kasei et al's algorithm](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.118.8221&rep=rep1&type=pdf).
  - `longestCommonSubstring` calculates the longest common substring of
    two or more strings in O(n) or O(n + log(k)) depending on the chosen index
    map implementation. The former version requires an additional O(n) space,
    whereas the latter version only requires an additional O(k) space.
- - `radixSort` sorts an array with number arrays that are all of the same
-   length in O(n).
+ - `radixSort` sorts an array with sub-arrays that are all the same length.
  - `suffixArray` calculates the
-   [suffix array](https://en.wikipedia.org/wiki/Suffix_array) of a given string
-   in O(n).
+   [suffix array](https://en.wikipedia.org/wiki/Suffix_array) of a given string.
+   This implementation is based on the
+   [Difference Cover modulo 3 (DC3) or skew algorithm by Kärkkäinen et al](http://algo2.iti.kit.edu/documents/jacm05-revised.pdf).
 
 **Note**: While the algorithms provided here are linear-time implementations,
 they are still outperformed by readily available C/C++ implementations.
+
+Also note that although these implementations are O(n), linear time does not
+automatically beat O(n log(n)) all the time. More efficient implementations
+that are O(n log(n)) may in fact be faster in practice in many situations.
+To see that, consider that log<sub>2</sub>(n) grows very slow. For example
+log<sub>2</sub>(100,000) is approximately 16.6. The linear-time longest common
+substring implementation makes many linear passes through the input string,
+quite possibly more than 16 in total. So if there exists an O(n log(n))
+implementation that can do everything it needs to do in just one pass through
+the input, it would already come out ahead of the linear time implementation
+for n less than or equal to 100,000.
 
 Due to limitations of Node.js, the maximum string size is currently limited too
 by the maximum heap size which is currently just shy of 2GB--and the actual
@@ -118,7 +130,8 @@ const result = radixSort(integers);
 
 [Run the example](https://runkit.com/burgaard/59d48f7d71579b0011996590).
 
-Given an array of strings and a function that converts each string to an array of char codes:
+Given an array of strings that are all the same length, and a function that converts
+each string to an array of char codes:
 
 ```javascript
 const strings = [
