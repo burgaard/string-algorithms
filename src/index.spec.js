@@ -25,12 +25,14 @@ import {
   suffixArray,
   longestCommonPrefix,
   longestCommonSubstring,
+  search,
 } from './index';
 
 import radixSortOrig from './radix-sort';
 import suffixArrayOrig from './suffix-array';
 import longestCommonPrefixOrig from './longest-common-prefix';
 import longestCommonSubstringOrig from './longest-common-substring';
+import searchOrig from './search';
 
 describe('exports', () => {
   it('exports radixSort', () => {
@@ -47,5 +49,9 @@ describe('exports', () => {
 
   it('exports longestCommonSubstring', () => {
     expect(longestCommonSubstring).toBe(longestCommonSubstringOrig);
+  });
+
+  it('exports search', () => {
+    expect(search).toBe(searchOrig);
   });
 });

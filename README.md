@@ -21,6 +21,9 @@ The algorithms implemented are:
    map implementation. The former version requires an additional O(n) space,
    whereas the latter version only requires an additional O(k) space.
  - `radixSort` sorts an array with sub-arrays that are all the same length.
+ - `search` finds all instances of the given term in string. This implementation
+   is based on
+   [Knuth, Morris and Pratt's algorithm](https://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm).
  - `suffixArray` calculates the
    [suffix array](https://en.wikipedia.org/wiki/Suffix_array) of a given string.
    This implementation is based on the
@@ -242,6 +245,16 @@ Returns the index of the substring that contains the given position.
 
 Returns a string representation of the string index map.
  
+### `function search(text, term)`
+
+Finds all instances of term in the given text.
+
+`text` is the string to be searched.
+
+`term` is the substring to search for.
+
+Returns an array with the start index of all occurrences of term in text.
+
 ## Contributing
 
 Contributions welcome; Please submit all pull requests against the master branch. If your

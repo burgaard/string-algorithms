@@ -28,6 +28,7 @@ import radixSort from './radix-sort';
 import suffixArray from './suffix-array';
 import longestCommonPrefix from './longest-common-prefix';
 import longestCommonSubstring, { StringIndexMap } from './longest-common-substring';
+import search from './search';
 
 export {
   radixSort,
@@ -35,4 +36,5 @@ export {
   longestCommonPrefix,
   longestCommonSubstring,
   StringIndexMap,
+  search,
 };
