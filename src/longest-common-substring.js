@@ -1,5 +1,4 @@
-/**
- *
+/*
  * Linear-time computation of the Longest Common Substring. This implementation
  * computes the suffix array and the longest common prefix array, which is more
  * space efficient than constructing a generalized suffix tree. The substrings

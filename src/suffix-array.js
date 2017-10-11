@@ -9,15 +9,25 @@
  * This implementation is pure ES2015 JavaScript without any other dependencies,
  * meaning it can be run in pretty much any JavaScript interpreter (when transpiled
  * using e.g. babel).
- * 
- * Although this implementation is linear, it uses more memory and does some
- * string and array operations that cause additional linear passes compared to
- * more compact implementations in C and other languages.
- * 
- * Further, it is limited by Node.js's current string length limit (slightly less
- * than 250 million characters), which means applications to problems like DNA
- * sequence matching on data sets larger than about 100MB should look to other
- * platforms than JavaScript and Node.js.
+ *
+ * While the algorithms provided here is a linear-time implementations,
+ * it is still outperformed by readily available C/C++ implementations.
+ *
+ * Also note that although these implementations are O(n), linear time does not
+ * automatically beat O(n log(n)) all the time. More efficient implementations
+ * that are O(n * log(n)) may in fact be faster in practice in many situations.
+ * To see that, consider that log<sub>2</sub>(n) grows very slowly. For example
+ * log<sub>2</sub>(100,000) is approximately 16.6. The linear-time longest common
+ * substring implementation makes many linear passes through the input string,
+ * quite possibly more than 16 in total. So if there exists an O(n log(n))
+ * implementation that can do everything it needs to do in just one pass through
+ * the input, it would already come out ahead of the linear time implementation
+ * for n less than or equal to 100,000.
+ *
+ * Due to limitations of Node.js, the maximum string size is currently limited too
+ * by the maximum heap size which is currently just shy of 2GB--and the actual
+ * longest string that can be handled by the multiple longest common substring
+ * algorithm will be sevaral factors shorter than the maximum heap size.
  * 
  * On the other hand, this implememtation supports UTF-16 while the reference DC3
  * implementation expects a byte sized alphabet.

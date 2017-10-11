@@ -1,4 +1,4 @@
-/**
+/*
  * Implementation of the linear Knutt-Morris-Pratt string searching algorithm.
  * 
  * https://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm

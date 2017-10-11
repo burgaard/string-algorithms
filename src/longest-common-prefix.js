@@ -1,4 +1,4 @@
-/**
+/*
  * Linear-time computation of the Longest Common Prefix array from a suffix
  * array based on the algorithm by Kasai et al.
  *

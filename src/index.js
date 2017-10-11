@@ -1,4 +1,4 @@
-/**
+/*
  * Linear time implementations of Radix sorting, suffix array calculation,
  * longest common substring calculation, suffix tree calculation and longest
  * common substring (of multiple strings).

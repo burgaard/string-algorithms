@@ -17,8 +17,8 @@ The algorithms implemented are:
    suffix array. This implementation is based on
    [Kasei et al's algorithm](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.118.8221&rep=rep1&type=pdf).
  - `longestCommonSubstring` calculates the longest common substring of
-   two or more strings in O(n) or O(n + log(k)) depending on the chosen index
-   map implementation. The former version requires an additional O(n) space,
+   two or more strings in O(n + k) or O(n + (k * log(k))) depending on the chosen
+   index map implementation. The former version requires an additional O(n) space,
    whereas the latter version only requires an additional O(k) space.
  - `radixSort` sorts an array with sub-arrays that are all the same length.
  - `search` finds all instances of the given term in string. This implementation
@@ -34,8 +34,8 @@ they are still outperformed by readily available C/C++ implementations.
 
 Also note that although these implementations are O(n), linear time does not
 automatically beat O(n log(n)) all the time. More efficient implementations
-that are O(n log(n)) may in fact be faster in practice in many situations.
-To see that, consider that log<sub>2</sub>(n) grows very slow. For example
+that are O(n * log(n)) may in fact be faster in practice in many situations.
+To see that, consider that log<sub>2</sub>(n) grows very slowly. For example
 log<sub>2</sub>(100,000) is approximately 16.6. The linear-time longest common
 substring implementation makes many linear passes through the input string,
 quite possibly more than 16 in total. So if there exists an O(n log(n))
@@ -166,11 +166,24 @@ npm install --save string-algorithms
 
 ## API
 
+### `function search(text, term)`
+
+Finds all instances of term in the given text.
+
+`text` is the string to be searched.
+
+`term` is the substring to search for.
+
+Returns an array with the start index of all occurrences of term in text.
+
+**Note:** 
+
 ### `function radixSort(entries, getEntry)`
 
-Radix sorts an array of entries. If `getEntry` is not given, then entries is assumed to contain
+Radix sorts an array of entries. If `getEntry` is not given, then `entries` is assumed to contain
 an array of arrays where each sub-array is of the same length. If `getEntry` is given, then the
-entries may be of any type, but `getEntry` must return an array corresponding to each entry.
+entries may be of any type, but `getEntry` must return an array of the same length corresponding
+to each given entry.
 
 `entries` is an array with entries to be radix sorted.
 
@@ -179,6 +192,12 @@ may contain arrays that are all 4 elements long, but only the last three element
 considered for sorting. In that case, `getEntry` could be `entry => entry.slice(1)`.
 
 Returns a new array with the sorted entries.
+
+**Note:** Although this is a linear-time sort algorithm, it requires input to be of a uniform
+length (arrays with k entries, strings with at most k characters, digits with at most k digits
+and so on). The constant overhead is also pretty big, so for something as simple as sorting
+integers, a fast O(n * log(n)) implementation will probably beat radix sorting even for pretty
+big n.
 
 ### `function suffixArray(s, terminator)`
 
@@ -219,11 +238,11 @@ Returns an array with the longest common substrings(s).
 
 ### `class StringIndexMap`
 
-Maps the position of strings s1 ... sK when concatenated into one string. Concrete
-implementations provide different compromises between O(1) and O(log(K)) lookup times versus
-O(n) and O(k) space requirements. Extend this class to implement custom mappings from string
-positions to substring indices with different runtime/space tradeoffs than the two predefined
-implementations.
+Maps the position of strings s<sub>1</sub> ... s<sub>K</sub> when concatenated into one string.
+Concrete implementations provide different compromises between O(1) and O(log(K)) lookup times
+versus O(n) and O(k) space requirements. Extend this class to implement custom mappings from
+string positions to substring indices with different runtime/space tradeoffs than the two
+pre-defined implementations.
 
 #### `function add(length)`
 
@@ -245,16 +264,6 @@ Returns the index of the substring that contains the given position.
 
 Returns a string representation of the string index map.
  
-### `function search(text, term)`
-
-Finds all instances of term in the given text.
-
-`text` is the string to be searched.
-
-`term` is the substring to search for.
-
-Returns an array with the start index of all occurrences of term in text.
-
 ## Contributing
 
 Contributions welcome; Please submit all pull requests against the master branch. If your
