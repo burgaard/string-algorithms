@@ -17,9 +17,10 @@ The algorithms implemented are:
    suffix array. This implementation is based on
    [Kasei et al's algorithm](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.118.8221&rep=rep1&type=pdf).
  - `longestCommonSubstring` calculates the longest common substring of
-   two or more strings in O(n + k) or O(n + (k * log(k))) depending on the chosen
-   index map implementation. The former version requires an additional O(n) space,
-   whereas the latter version only requires an additional O(k) space.
+   two or more strings in O(*n* + *k*) or O(*n* + (*k* log(*k*))) depending on
+   the chosen index map implementation. The former version requires an additional
+   O(*n*) space, whereas the latter version only requires an additional O(*k*)
+   space.
  - `radixSort` sorts an array with sub-arrays that are all the same length.
  - `search` finds all instances of the given term in string. This implementation
    is based on
@@ -27,18 +28,18 @@ The algorithms implemented are:
  - `suffixArray` calculates the
    [suffix array](https://en.wikipedia.org/wiki/Suffix_array) of a given string.
    This implementation is based on the
-   [Difference Cover modulo 3 (DC3) or skew algorithm by Kärkkäinen et al](http://algo2.iti.kit.edu/documents/jacm05-revised.pdf).
+   [Difference Cover modulo 3 (DC3)/skew algorithm by Kärkkäinen et al](http://algo2.iti.kit.edu/documents/jacm05-revised.pdf).
 
 **Note**: While the algorithms provided here are linear-time implementations,
 they are still outperformed by readily available C/C++ implementations.
 
-Also note that although these implementations are O(n), linear time does not
-automatically beat O(n log(n)) all the time. More efficient implementations
-that are O(n * log(n)) may in fact be faster in practice in many situations.
-To see that, consider that log<sub>2</sub>(n) grows very slowly. For example
+Also note that although these implementations are O(*n*), linear time does not
+automatically beat O(*n* log(*n*)) all the time. More efficient implementations
+that are O(*n* log(*n*)) may in fact be faster in practice in many situations.
+To see that, consider that log<sub>2</sub>(*n*) grows very slowly. For example
 log<sub>2</sub>(100,000) is approximately 16.6. The linear-time longest common
 substring implementation makes many linear passes through the input string,
-quite possibly more than 16 in total. So if there exists an O(n log(n))
+quite possibly more than 16 in total. So if there exists an O(*n* log(*n*))
 implementation that can do everything it needs to do in just one pass through
 the input, it would already come out ahead of the linear time implementation
 for n less than or equal to 100,000.
@@ -225,8 +226,8 @@ entries.
 ### `function longestCommonSubstring(strings, indexMap)`
 
  Finds the longest common substring(s) in the set of given strings. If there are multiple
- substrings that all share the longest length, then all such substrings are returned. O(n) or
- O(n * log(K)) depending on the selected string indexing strategy.
+ substrings that all share the longest length, then all such substrings are returned.
+ O(*n* + *k*) or O(*n* + *k* log(*k*)) depending on the selected string indexing strategy.
  
  `strings` is an array of strings.
 
@@ -239,8 +240,8 @@ Returns an array with the longest common substrings(s).
 ### `class StringIndexMap`
 
 Maps the position of strings s<sub>1</sub> ... s<sub>K</sub> when concatenated into one string.
-Concrete implementations provide different compromises between O(1) and O(log(K)) lookup times
-versus O(n) and O(k) space requirements. Extend this class to implement custom mappings from
+Concrete implementations provide different compromises between O(1) and O(log(*k*)) lookup times
+versus O(*n*) and O(*k*) space requirements. Extend this class to implement custom mappings from
 string positions to substring indices with different runtime/space tradeoffs than the two
 pre-defined implementations.
 
@@ -274,6 +275,8 @@ Thanks!
 ## Author
 
 Kim Burgaard &lt;kim@burgaard.us&gt;.
+
+Made in Sunny California with love and sustainably harvested coffee.
 
 ## License
 
