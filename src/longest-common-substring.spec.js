@@ -340,6 +340,16 @@ describe('longestCommonSubstring', () => {
     expect(result).toEqual([]);
   });
 
+  it('supports use cases related to issue #1', () => {
+    const result1 = longestCommonSubstring(['abc - 48h', 'abc - 108h', 'abc - 168h']);
+    const result2 = longestCommonSubstring(['abcTab', 'abcUab', 'abcTab']);
+    const result3 = longestCommonSubstring(['abcTde', 'abcUde', 'abcTde']);
+
+    expect(result1).toEqual(['abc - ']);
+    expect(result2).toEqual(['abc']);
+    expect(result3).toEqual(['abc']);
+  });
+
   it('throws an error when given a boolean', () => {
     expect(() => longestCommonSubstring(true)).toThrow();
     expect(() => longestCommonSubstring(false)).toThrow();

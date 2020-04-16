@@ -288,6 +288,28 @@ export default function longestCommonSubstring(strings, indexMap = 'log') {
     const h = lcp[i];
     const suffixNext = sa[i + 1];
     const stringIndexNext = stringIndexMap.lookup(suffixNext);
+
+    // if the height goes down, then check what we have on the stack
+    while (top > h) {
+      const entries = entryStack.pop();
+      if (top >= longest) {
+        const keys = Object.keys(entries);
+        // check if all k strings have been seen
+        if (keys.length === k) {
+          const r = entries[keys[0]];
+          if (top > longest) {
+            // reset result for the longest substring seen so far
+            longest = top;
+            result = [r];
+          } else {
+            // add substring to its peers of longest substrings seen so far
+            result.push(r);
+          }
+        }
+      }
+      top--;
+    }
+
     let j = 0;
     if (h >= top && h > 0) {
       // add a stack entry for each height level and map the string index to its suffix and length
@@ -302,29 +324,6 @@ export default function longestCommonSubstring(strings, indexMap = 'log') {
       top = j;
     }
 
-    // if the height goes down, then check what we have on the stack
-    j = top;
-    while (j > h) {
-      const entries = entryStack.pop();
-      if (j >= longest) {
-        const keys = Object.keys(entries);
-        // check if all k strings have been seen
-        if (keys.length === k) {
-          const r = entries[keys[0]];
-          if (j > longest) {
-            // reset result for the longest substring seen so far
-            longest = j;
-            result = [r];
-          } else {
-            // add substring to its peers of longest substrings seen so far
-            result.push(r);
-          }
-        }
-      }
-      j--;
-    }
-
-    top = h;
     i++;
     suffix = suffixNext;
     stringIndex = stringIndexNext;
