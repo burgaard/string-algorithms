@@ -28,10 +28,10 @@
  * by the maximum heap size which is currently just shy of 2GB--and the actual
  * longest string that can be handled by the multiple longest common substring
  * algorithm will be sevaral factors shorter than the maximum heap size.
- * 
+ *
  * On the other hand, this implememtation supports UTF-16 while the reference DC3
  * implementation expects a byte sized alphabet.
- * 
+ *
  * Copyright (C) 2017 Kim Burgaard <kim@burgaard.us>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
