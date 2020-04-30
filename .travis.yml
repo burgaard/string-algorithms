@@ -4,7 +4,7 @@ cache: yarn
 script:
 - yarn build
 - if [[ $TRAVIS_BRANCH == 'master' ]] && [[ $TRAVIS_PULL_REQUEST == 'false' ]]; then
-  npm version patch -m "Releasing version %s [ci skip]" && git push origin HEAD:master && git push origin HEAD:master --tags;
+  .travis/prepare-release.sh; fi
 deploy:
   provider: npm
   email: kim@burgaard.us
@@ -13,6 +13,6 @@ deploy:
     secure: Pace+Y1um2F1deF/9gfE9IqSxXzxKHUJvTV7Q1NBiLOirAnXZS5bvvQdOh7kSINHR4Qm5Q+UVEjTX2pWfHR5QoAUsBlIkVx6cv22xgdo+xawA1d5UgW3eU56STNhXbvUE8uP6dqO4OhqHVpZuFOhRB4SwXJBWsfm7OGFOnw3USUWqVdsYRoAYC0Ylo5j2WswIZLO1zBd4TPkwPdVr6NaJ2YjlajUXzjLEpuQd68DHrPHOnI5dw9T1ZWJvR6Ix+rh7xnBAAe1h0gRerLtoODEZundziVi2ejpfPaEvirDoyNXSwaBKd/MO4zoXIFlMfVVhlcrWcT1vuImtDTxjVnouL9Gu5Z+MrJ3PUEDRmnviCVD7Cqbwtcic+hGHNHIgEFAnfZP3Sp/ExiDTpIUX8kc1p+dJnhIxTz98I+F0jlGrIzulzz1CAazn81GnlXsBpnCpcAUDlH3hZyHPxpYkkIJq/SS9Q5f9zAsZ1JICnAZEqCfJmEk9oOm7UqsFq4DVHgLJQCDYotpomJi9Z89Mk1DN9CGQMIKfJOjQdM3kOizjLn/h+u3ra6bkno75mJoZC26CyhtsyUrHTdhGRU2nPekJTJLubQhsNrRiihrx39pN/E7jnH8wfMgOFWJRiV8SA9w36vG0YcwCmloksrwZCSfp21WzKSiCpMEmuFK7pu8CYI=
   on:
     branch: master
-# env:
-#   global:
-#     secure: cfO+U6ZDKL8kLPU8daDRCV2j39z3MkZgvUyKre3FBv6/YvAQs5WXLJt2qIMJ0mNeBpewIGEF8nz9SOt6zewAtqzITaEDUx+vegoIIdlt4LpBRxo4FkUTMsTlGwOZmYk6BZmuemTGzCkowVn9A2q7z4a22RgM8+ND6VH7/7UkgLx3quMAmmL2i8JSgmeHJATfsUwfXTSIYC2BqrAAx+cNUJ9nv6A1cvH7ZbgBKXJ+E12eRuFZ7rqUqmbb2syqf2bojLd9L3mWR4//URkMaN3nez5dNljBfQXN9A0mpxRlibU7gEEHhIdnL55YU0rKGIf732ltoxLj2BQmoUzocXB1oDhbZWKbMDsK8ZCfuVsZkS+ncB/xMMogpLfz1an25vlAU4fq9ANfU7YOTbJtjcnp794z51aTzqPWn3ulfCA1J7J/HxBZ9o4TfZ3RyYnL7ffMRJcz865o+sXkKP9G9yWSJ0K490tm6tjsxk39vnyKZJ3pNuykXPbMr9E2j4r+/1I24mny6mIUJUvKI5Pcum2+hin1whVxqyMzPXnwN4i9RCKOArYwx28t+6kdvu2NrCFzEZe23RzYNRyqLeb2bHBSjW4rutF7n1w7JwQCr2Qp5+91DYSGoeb/hVLJAXAlfR4GeTw96DobfTDPqypAk08kXpZgj8i2ijoSm53N4xKG8sw=
+env:
+  global:
+    secure: ap3tYJrU8sqGRM3xJ0Dgja17tAfNHyw2qhcX+nw2za+ajQRPx0/1sFlAnJi1IDYtueg/x+qQgRAKyGB4A5KAZnWHx/zX53nfZ61z9OO5hlKBDUa+54FCLDpi6AtNQkBT8zn/T4pT4IItSB2piBiwLO3gT+AZP0uQOJ00ojjUwoEUgTMpT+mcYp/QUYp4qORWUj4ZEpEqMv60moAlqQgwWCVX0b3dpzZVy/MZwI7PSVyN+cg2EEKKPXfl9fXy7k5DyU/NBWV7/aJFf/pJRZQGDbpY7FfWpTjhsG+cf9S1QPUFMUVezW6rlSISSsar+/odbOA4EZTCPNXTsQMlFYECwnvWTfvqtzJlg8NBzl1OvJNIby4H1tPXZKO6/6IZkNU/x25rhx/oYe1fvFnQlZZxc7zagnSQa6ubjJJ9pdTANDNulg5fLTE68CZSK8fGxijX+6GrK6rPdlqotgi5npmCELLpORu33BcYNHcnzAXbwz+8qtcIHnCNJf4ayafYdTnbClKTu7F4OdtqvlNqKZWy1r7AYbeKZJF5WlCaUcYexAn6kSW+5q7Yy2N/kz6bGttHFyAf9AdtEb7RgF3G249WA81en76q4v6oru531sLn+SoN31TDNWo0Otmp2NIPdaiGhYJesp7bI3ZmCXRUojBNOSnnb6gyVoEBIArjtTk9fCw=
