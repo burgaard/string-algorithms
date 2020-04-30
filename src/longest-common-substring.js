@@ -236,7 +236,7 @@ function ensureNonEmptyString(e) {
  * are multiple substrings that all share the longest length, then all such
  * substrings are returned. O(n) or O(n * log(K)) depending on the selected
  * string indexing strategy.
- * 
+ *
  * @param {string[]} strings an array of strings.
  * @param {string|StringIndexMap} [indexMap='log'] string indexing map. If
  *   given a string, it must be one of 'log' or 'linear'.

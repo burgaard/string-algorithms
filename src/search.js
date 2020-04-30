@@ -1,6 +1,6 @@
 /*
  * Implementation of the linear Knutt-Morris-Pratt string searching algorithm.
- * 
+ *
  * https://en.wikipedia.org/wiki/Knuth–Morris–Pratt_algorithm
  *
  * Copyright (C) 2017 Kim Burgaard <kim@burgaard.us>
