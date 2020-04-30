@@ -5,7 +5,7 @@
  * are concatenated with unique markers and their positions recorded in a
  * string index map. Iterating over the heights given in the longest common
  * prefix array, the string index map is used to lookup whet substring each
- * suffix array enry belongs to. If k substrings are seen at the same height,
+ * suffix array entry belongs to. If k substrings are seen at the same height,
  * then a common substring across all given substrings has been found.
  *
  * Copyright (C) 2017 Kim Burgaard <kim@burgaard.us>
