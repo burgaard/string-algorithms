@@ -3,8 +3,8 @@ node_js: '8'
 cache: yarn
 script:
 - yarn build
-# - if [[ $TRAVIS_BRANCH == 'master' ]] && [[ $TRAVIS_PULL_REQUEST == 'false' ]]; then
-#   .travis/prepare-release.sh; fi
+- if [[ $TRAVIS_BRANCH == 'master' ]] && [[ $TRAVIS_PULL_REQUEST == 'false' ]]; then
+  npm version patch -m "Releasing version %s [ci skip]" && git push origin HEAD:master && git push origin HEAD:master --tags;
 deploy:
   provider: npm
   email: kim@burgaard.us
