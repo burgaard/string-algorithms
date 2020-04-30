@@ -1,12 +1,12 @@
 /*
  * Linear radix sort implementation.
- * 
+ *
  * Although this is a linear-time sort algorithm, it requires input to be of a
  * uniform length (arrays with k entries, strings with at most k characters,
  * digits with at most k digits and so on). The constant overhead is also pretty
  * big, so for something as simple as sorting integers, a fast O(n * log(n))
  * implementation will probably beat radix sorting even for pretty big n.
- * 
+ *
  * Copyright (C) 2017 Kim Burgaard <kim@burgaard.us>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,7 +32,7 @@
  * Radix sorts an array of entries. If getEntry is not given, then entries is assumed to contain
  * an array of arrays where each sub-array is of the same length. If getEntry is given, then the
  * entries may be of any type, but getEntry must return an array corresponding to each entry.
- * 
+ *
  * @param {Array.<number[]>} entries an array of entries to be radix sorted.
  * @param {function} [getEntry] an optional function for retrieving each entry.
  * @return the sorted entries.
